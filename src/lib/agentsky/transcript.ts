@@ -2,7 +2,7 @@
  *  made of steps (thinking, searches, clicks…), answer text and interactive cards. */
 import type { RawEvent } from "./client";
 
-export type StepKind = "thought" | "search" | "read" | "browse" | "image" | "video" | "helper" | "command" | "edit" | "ask" | "task" | "plan" | "tool";
+export type StepKind = "thought" | "search" | "read" | "browse" | "image" | "video" | "helper" | "command" | "edit" | "ask" | "task" | "plan" | "tool" | "python" | "code" | "file" | "memory" | "email" | "calendar" | "map" | "data";
 export type Step = {
   id: string;
   kind: StepKind;
@@ -92,6 +92,8 @@ const L = {
     task: (t: string) => `Added a task: ${t}`,
     plan: "Updated the plan",
     tool: (n: string) => `Used ${n}`,
+    python: "Ran Python", code: "Wrote code", file: (f: string) => (f ? `Opened ${f}` : "Read a file"),
+    memory: "Checked memory", email: "Worked on email", calendar: "Checked the calendar", map: "Looked up a place", data: "Analyzed data",
     thinking: "Thinking",
     thought: "Thought it through",
   },
@@ -112,6 +114,8 @@ const L = {
     task: (t: string) => `ضاف مهمة: ${t}`,
     plan: "حدّث الخطة",
     tool: (n: string) => `استخدم ${n}`,
+    python: "شغّل بايثون", code: "كتب كود", file: (f: string) => (f ? `فتح ${f}` : "قرأ ملف"),
+    memory: "راجع الذاكرة", email: "اشتغل على الإيميل", calendar: "راجع التقويم", map: "دور على مكان", data: "حلّل بيانات",
     thinking: "بيفكر",
     thought: "فكّر في الموضوع",
   },
@@ -139,6 +143,15 @@ export function describeTool(name: string, args: any, lang: Lang): { kind: StepK
     if (act.includes("snapshot") || act.includes("screenshot")) return { kind: "browse", label: t.looked };
     return { kind: "browse", label: t.opened(host(a.url || a.targetUrl)) };
   }
+  if (n.includes("python") || n.includes("code_interpreter") || n.includes("jupyter") || (n === "exec" && /python/i.test(String(a.command || a.cmd || "")))) return { kind: "python", label: t.python };
+  if (n.includes("memory") || n.includes("recall")) return { kind: "memory", label: t.memory };
+  if (n.includes("mail") || n.includes("gmail")) return { kind: "email", label: t.email };
+  if (n.includes("calendar") || n.includes("event")) return { kind: "calendar", label: t.calendar };
+  if (n.includes("map") || n.includes("place") || n.includes("location")) return { kind: "map", label: t.map };
+  if (n.includes("sql") || n.includes("csv") || n.includes("sheet") || n.includes("chart")) return { kind: "data", label: t.data };
+  if (n === "read" || n.includes("read_file") || n.includes("view") || n === "ls" || n.includes("glob") || n.includes("grep"))
+    return { kind: "file", label: t.file(short(String(a.path || a.file_path || a.pattern || "").split("/").pop(), 40)) };
+  if (n.includes("code") || n.includes("sandbox") || n.includes("deploy") || n.includes("build")) return { kind: "code", label: t.code };
   if (n === "exec" || n.includes("bash") || n.includes("shell") || n === "process") return { kind: "command", label: t.command };
   if (n.includes("write") || n.includes("edit") || n.includes("apply_patch"))
     return { kind: "edit", label: t.edit(short(String(a.path || a.file_path || "").split("/").pop(), 40)) };

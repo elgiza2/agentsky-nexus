@@ -2,7 +2,7 @@
 import { useState } from "react";
 import {
   Brain, Search, FileText, MousePointerClick, Image as ImageIcon, Film, Users, Terminal, PenLine,
-  MessageCircleQuestion, ListTodo, ListChecks, Wrench, ChevronDown, X,
+  MessageCircleQuestion, ListTodo, ListChecks, Wrench, ChevronDown, X, Code2, FileCode, FolderOpen, BookMarked, Mail, CalendarDays, MapPin, BarChart3,
 } from "lucide-react";
 import type { Step, StepKind } from "@/lib/agentsky/transcript";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { AgentOrb } from "./AgentOrb";
 const ICONS: Record<StepKind, any> = {
   thought: Brain, search: Search, read: FileText, browse: MousePointerClick, image: ImageIcon, video: Film,
   helper: Users, command: Terminal, edit: PenLine, ask: MessageCircleQuestion, task: ListTodo, plan: ListChecks, tool: Wrench,
+  python: FileCode, code: Code2, file: FolderOpen, memory: BookMarked, email: Mail, calendar: CalendarDays, map: MapPin, data: BarChart3,
 };
 
 function StepRow({ step }: { step: Step }) {
@@ -18,7 +19,7 @@ function StepRow({ step }: { step: Step }) {
   const Icon = step.status === "error" ? X : ICONS[step.kind];
   const expandable = step.kind === "thought" && !!step.detail?.trim();
   return (
-    <div className="ag-step ag-fade-in" data-status={step.status}>
+    <div className="ag-step ag-fade-in" data-status={step.status} data-kind={step.kind}>
       <span className="ag-step__icon">
         {step.kind === "helper" ? <AgentOrb size={20} color="mint" state={step.status === "active" ? "tool" : step.status === "error" ? "error" : "done"} /> : <Icon size={12} strokeWidth={2.4} />}
       </span>
