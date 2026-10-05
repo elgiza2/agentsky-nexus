@@ -1,8 +1,9 @@
 /** Runs OpenClaw through AgentSky while preserving Megsy's original chat surface. */
 import type React from "react";
 import { agentApi, openStream, type AgentRequest, type RawEvent } from "@/lib/agentsky/client";
-import { buildTranscript, type AgentTurn, type Lang } from "@/lib/agentsky/transcript";
+import { buildTranscript, orbStateFor, type AgentTurn, type Lang } from "@/lib/agentsky/transcript";
 import type { Message, ToolPart } from "../chatConstants";
+import { loadWorkspace, workspace } from "@/lib/agentsky/store";
 import type { AttachedFile } from "../hooks/useAttachments";
 
 type Args = {
@@ -45,11 +46,11 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
   const assistantClientId = `assistant-${args.localTurnId}`;
   const controller = new AbortController();
   args.abortControllerRef.current = controller;
-  args.setMessages((prev) => [
-    ...prev,
-    args.userMsg,
-    { role: "assistant", content: "", clientId: assistantClientId, agentPending: true, modelLabel: "OpenClaw · gpt-5.6-luna" },
-  ]);
+  const update = (patch: Partial<Message>) => args.setMessages((prev) => prev.map((message) => message.clientId === assistantClientId ? { ...message, ...patch } : message));
+  args.setMessages((prev) => [...prev, args.userMsg, {
+    role: "assistant", content: "", clientId: assistantClientId, agentPending: true,
+    agentSkyState: "awakening", modelLabel: "OpenClaw · gpt-5.6-luna",
+  }]);
   args.setInput("");
   args.setAttachedFiles([]);
   args.setIsLoading(true);
@@ -57,75 +58,105 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
 
   let sid = args.sessionId;
   let events: RawEvent[] = [];
+  let turn: AgentTurn | undefined;
+  let conversationId: string | null = null;
+  let requests: AgentRequest[] = [];
+  let identity: Message["agentSkyAgent"];
+  let failure: string | undefined;
+  let stopped = false;
+  const baseline = new Set<string>();
+  const received = new Set<string>();
+  let started = false;
+  const apply = (running: boolean) => {
+    const turns = buildTranscript(events, args.lang, running);
+    turn = [...turns].reverse().find((item): item is AgentTurn => item.type === "agent");
+    update({
+      content: turn?.text || "", agentPending: running && !turn?.text,
+      agentSkyState: stopped ? "idle" : orbStateFor(turn, running),
+      agentSkySteps: turn?.steps ?? [], toolParts: toToolParts(turn),
+      agentSkyCards: turn?.cards, agentSkyStopped: stopped,
+      reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n"),
+    });
+  };
+  const conversationPromise = args.createOrUpdateConversation(args.text || "New chat").catch(() => null);
   try {
-    const conversationPromise = args.createOrUpdateConversation(args.text || "New chat");
+    await loadWorkspace();
+    if (sid) {
+      const existing = await agentApi.session(sid);
+      identity = workspace.agent(existing.session.agentId);
+      const history = await agentApi.events(sid);
+      history.events.forEach((event) => baseline.add(event.id));
+    } else {
+      identity = workspace.agent(args.agentId);
+    }
+    if (identity) identity = { id: identity.id, name: identity.name, color: identity.color };
+    update({ agentSkyAgent: identity });
+    if (controller.signal.aborted) { stopped = true; return; }
     if (!sid) {
       const created = await agentApi.createSession({ agentId: args.agentId, text: args.text, images: args.images });
       sid = created.session.id;
+      workspace.upsertSession(created.session);
+      const selected = workspace.agent(created.session.agentId);
+      if (selected) identity = { id: selected.id, name: selected.name, color: selected.color };
     } else {
       await agentApi.send(sid, args.text, args.images);
     }
     const activeSid = sid;
     args.onSession(activeSid);
-    controller.signal.addEventListener("abort", () => void agentApi.interrupt(activeSid).catch(() => undefined), { once: true });
-
-    const apply = () => {
-      const turns = buildTranscript(events, args.lang, true);
-      const turn = [...turns].reverse().find((item): item is AgentTurn => item.type === "agent");
-      args.setMessages((prev) => prev.map((message) => message.clientId === assistantClientId ? {
-        ...message,
-        content: turn?.text || "",
-        agentPending: !turn?.text && !turn?.steps.length,
-        reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n"),
-        toolParts: toToolParts(turn),
-        agentSkySessionId: activeSid,
-        agentSkyCards: turn?.cards,
-      } : message));
-    };
-
-    await openStream(activeSid, (event) => {
-      events.push(event);
-      apply();
-    }, controller.signal);
-    if (controller.signal.aborted) return;
-
-    const latest = await agentApi.events(activeSid);
-    events = latest.events;
-    const turns = buildTranscript(events, args.lang, false);
-    const turn = [...turns].reverse().find((item): item is AgentTurn => item.type === "agent");
-    apply();
-    const requests = await agentApi.requests(activeSid).catch(() => ({ requests: [], sessions: [] }));
-    args.onRequests(requests.requests);
-    args.setMessages((prev) => prev.map((message) => message.clientId === assistantClientId ? {
-      ...message,
-      agentSkyRequests: requests.requests,
-    } : message));
-    const conversationId = await conversationPromise;
-    if (conversationId) {
-      const userId = await args.saveMessage(conversationId, "user", args.userMsg.content);
-      if (userId) args.ownInsertedIdsRef.current.add(userId);
-      const metadata = {
-        kind: "agentSky",
-        agentSkySessionId: activeSid,
-        agentSkyCards: turn?.cards ?? [],
-        agentSkyRequests: requests.requests,
-        reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n") || undefined,
-        toolParts: toToolParts(turn),
-        modelLabel: "OpenClaw · gpt-5.6-luna",
-      };
-      const assistantId = await args.saveMessage(conversationId, "assistant", turn?.text || "", undefined, metadata);
-      if (assistantId) args.ownInsertedIdsRef.current.add(assistantId);
-      args.setMessages((prev) => prev.map((message) => message.clientId === assistantClientId ? { ...message, id: assistantId, agentPending: false } : message));
-      window.dispatchEvent(new CustomEvent("megsy:conversations-changed"));
+    update({ agentSkySessionId: activeSid, agentSkyAgent: identity });
+    const interrupt = () => { void agentApi.interrupt(activeSid).catch(() => undefined); };
+    if (controller.signal.aborted) { stopped = true; interrupt(); return; }
+    controller.signal.addEventListener("abort", interrupt, { once: true });
+    try {
+      await openStream(activeSid, (event) => {
+        if (baseline.has(event.id) || received.has(event.id)) return false;
+        received.add(event.id);
+        if (event.type === "session.status_idle" && !started) return false;
+        if (event.type === "session.status_running" || event.type.startsWith("agent.")) started = true;
+        events.push(event);
+        const terminal = event.type === "session.status_idle" || event.type === "session.error";
+        apply(!terminal);
+        return terminal;
+      }, controller.signal);
+    } finally {
+      controller.signal.removeEventListener("abort", interrupt);
     }
+    if (controller.signal.aborted) { stopped = true; return; }
+    apply(false);
+    requests = (await agentApi.requests(activeSid).catch(() => ({ requests: [], sessions: [] }))).requests;
+    args.onRequests(requests);
+    update({ agentSkyRequests: requests });
   } catch (error) {
-    if (!controller.signal.aborted) {
-      const message = error instanceof Error ? error.message : "تعذّر تشغيل الوكيل. جرّب تاني.";
-      args.setMessages((prev) => prev.map((item) => item.clientId === assistantClientId ? { ...item, content: message, agentPending: false } : item));
-    }
+    stopped = controller.signal.aborted;
+    if (!stopped) failure = error instanceof Error ? error.message : (args.lang === "ar" ? "تعذّر تشغيل الوكيل." : "Could not run the agent.");
   } finally {
+    stopped = stopped || controller.signal.aborted;
+    apply(false);
+    update({ agentPending: false, agentSkyState: failure || turn?.error ? "error" : stopped ? "idle" : "done", agentSkyStopped: stopped, ...(failure ? { content: turn?.text ? `${turn.text}\n\n${failure}` : failure } : {}) });
     if (args.abortControllerRef.current === controller) args.abortControllerRef.current = null;
     args.setIsLoading(false);
     args.setIsThinking(false);
+    conversationId = await conversationPromise;
+    if (conversationId) {
+      try {
+        const userId = await args.saveMessage(conversationId, "user", args.userMsg.content, args.images);
+        if (userId) args.ownInsertedIdsRef.current.add(userId);
+        const metadata = {
+          kind: "agentSky", agentSkySessionId: sid, agentSkyAgent: identity,
+          agentSkySteps: turn?.steps ?? [], agentSkyStopped: stopped,
+          agentSkyState: failure || turn?.error ? "error" : "done",
+          agentSkyCards: turn?.cards ?? [], agentSkyRequests: requests,
+          reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n"),
+          toolParts: toToolParts(turn), modelLabel: "OpenClaw · gpt-5.6-luna",
+        };
+        const text = failure || turn?.error || turn?.text || (stopped ? (args.lang === "ar" ? "اتوقف." : "Stopped.") : "");
+        const assistantId = await args.saveMessage(conversationId, "assistant", text, undefined, metadata);
+        if (assistantId) args.ownInsertedIdsRef.current.add(assistantId);
+        update({ id: assistantId });
+        window.dispatchEvent(new CustomEvent("megsy:conversations-changed"));
+      } catch (error) {
+        console.error("Could not save agent conversation", error);
+      }
+    }
   }
 }
