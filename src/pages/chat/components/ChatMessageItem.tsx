@@ -32,6 +32,8 @@ import {
 import { updateMessageMetadata } from "../services/conversationApi";
 import { trackChatInteraction } from "../services/trackInteraction";
 import MegsyStarGradient from "@/components/branding/MegsyStarGradient";
+import { AgentPresence } from "@/components/agent/AgentPresence";
+import { StepTimeline } from "@/components/agent/StepTimeline";
 
 
 // Persist branching state on the pivot user message's metadata JSONB so
@@ -137,7 +139,7 @@ const ChatMessageItemImpl = ({
     msg.role === "user" && !!msg.user_id && !!chatUserId && msg.user_id !== chatUserId;
   const isLast = i === lastMessageIdx;
   const isLastAssistant = isLast && msg.role === "assistant";
-  const hasRunningTool = !!msg.toolParts?.some((part) => part.state === "running");
+  const hasRunningTool = !msg.agentSkyState && !!msg.toolParts?.some((part) => part.state === "running");
   const isStreamingThis = (isLoading && isLastAssistant) || hasRunningTool;
   // While media is generating we show a single skeleton tile — the thinking
   // bubble is suppressed so the user never sees two stacked loading boxes.
@@ -166,7 +168,11 @@ const ChatMessageItemImpl = ({
     !mediaDone;
   const content = (
     <>
-      {showMediaSkeleton ? null : msg.role === "assistant" && msg.agentPending && !msg.computerTaskId ? (
+      {msg.role === "assistant" && msg.agentSkyState && <>
+        <AgentPresence message={msg} />
+        {!!msg.agentSkySteps?.length && <div className="px-3 md:px-12" data-agent-color={msg.agentSkyAgent?.color ?? "aurora"}><StepTimeline steps={msg.agentSkySteps} lang={/^[\u0600-\u06ff]/.test(msg.agentSkySteps[0]?.label ?? "") ? "ar" : "en"} /></div>}
+      </>}
+      {msg.role === "assistant" && msg.agentSkyState && !msg.content ? null : showMediaSkeleton ? null : msg.role === "assistant" && msg.agentPending && !msg.computerTaskId && !msg.agentSkyState ? (
         <AgentThinkingLine />
       ) : msg.role === "assistant" && msg.longRunId ? (
         <div className="flex flex-col gap-2">
@@ -202,12 +208,12 @@ const ChatMessageItemImpl = ({
           attachedImages={msg.attachedImages}
           attachedFiles={msg.attachedFiles}
           isStreaming={isStreamingThis}
-          isThinking={isThinking && isLastAssistant}
+          isThinking={!msg.agentSkyState && isThinking && isLastAssistant}
           searchStatus={isLastAssistant ? (searchStatus as any) : undefined}
           toolActivity={isLastAssistant ? (toolActivity as any) : null}
           parallelTasks={isLastAssistant ? (parallelTasks as any) : undefined}
           toolParts={msg.agentSkySessionId ? undefined : msg.toolParts}
-          reasoning={msg.reasoning}
+          reasoning={msg.agentSkyState ? undefined : msg.reasoning}
           interrupted={msg.interrupted}
           timing={msg.timing}
           modelLabel={msg.modelLabel}
@@ -318,7 +324,7 @@ const ChatMessageItemImpl = ({
           senderName={hasMembers ? msg.senderName || undefined : undefined}
           senderAvatar={hasMembers ? msg.senderAvatar || undefined : undefined}
           isOtherMember={isOther}
-          bubbleColor={isOther ? colorForUser(msg.user_id!) : null}
+          bubbleColor={isOther && msg.user_id ? colorForUser(msg.user_id) : null}
           messageId={msg.id}
           currentUserId={chatUserId || undefined}
           reactions={

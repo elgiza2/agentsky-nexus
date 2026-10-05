@@ -363,6 +363,7 @@ export function buildTranscript(events: RawEvent[], lang: Lang, running: boolean
         break;
       case "error":
         agent().error = f.message;
+        close(false);
         break;
     }
   }

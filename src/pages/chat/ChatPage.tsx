@@ -1471,7 +1471,7 @@ const ChatPage = () => {
       (text.trim().startsWith("[LEARN_ANSWER]") || text.trim().startsWith("[LEARN_CHOICE]"));
     const hasFrames = chatMode === "video" && videoStartEndMode && !!startFrameUrl && !!endFrameUrl;
     if (!text.trim() && attachedFiles.length === 0 && !hasFrames) return;
-    if (isLoading) {
+    if (isLoading || (isSubmittingRef.current && abortControllerRef.current)) {
       if (text.trim()) {
         queuedAgentMessagesRef.current.push(text.trim());
         setInput("");
@@ -1568,15 +1568,15 @@ const ChatPage = () => {
         mode: chatMode,
       };
       const previousSessionId =
-        activeAgentSkySessionRef.current ||
         [...messages].reverse().find((message) => message.agentSkySessionId)?.agentSkySessionId;
       const requestedAgentId = new URLSearchParams(location.search).get("agent") || undefined;
+      const lastAgentId = [...messages].reverse().find((message) => message.agentSkyAgent)?.agentSkyAgent?.id;
       try {
         await runAgentSkyTurn({
           text,
           userMsg,
           localTurnId,
-          sessionId: previousSessionId,
+          sessionId: requestedAgentId && lastAgentId && requestedAgentId !== lastAgentId ? undefined : previousSessionId,
           agentId: requestedAgentId,
           lang: getUserLang() === "ar-eg" ? "ar" : "en",
           images,

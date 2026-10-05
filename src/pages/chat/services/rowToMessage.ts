@@ -123,6 +123,10 @@ export function rowToMessage(
     agentSkySessionId: typeof meta.agentSkySessionId === "string" ? meta.agentSkySessionId : undefined,
     agentSkyCards: Array.isArray(meta.agentSkyCards) ? meta.agentSkyCards : undefined,
     agentSkyRequests: Array.isArray(meta.agentSkyRequests) ? meta.agentSkyRequests : undefined,
+    agentSkyAgent: meta.agentSkyAgent,
+    agentSkySteps: Array.isArray(meta.agentSkySteps) ? meta.agentSkySteps : undefined,
+    agentSkyState: meta.agentSkyState === "error" ? "error" : meta.agentSkySessionId ? "done" : undefined,
+    agentSkyStopped: !!meta.agentSkyStopped,
     interrupted: interrupted || undefined,
   } as Message;
 }

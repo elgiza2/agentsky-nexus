@@ -13,7 +13,7 @@ export default function AgentSkyBlocks({ message, onSend }: { message: Message; 
   const lang = useUserLang() === "ar-eg" ? "ar" : "en";
   const navigate = useNavigate();
   const workspace = useWorkspaceStore();
-  const tools = message.toolParts ?? [];
+  const tools = message.agentSkySteps ? [] : message.toolParts ?? [];
   const cards = message.agentSkyCards ?? [];
   const requests = message.agentSkyRequests ?? [];
 

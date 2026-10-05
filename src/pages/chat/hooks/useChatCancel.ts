@@ -58,9 +58,18 @@ export function useChatCancel(args: Args) {
   } = args;
 
   return useCallback(() => {
+    // The AgentSky turn owns its interrupted response and persistence.
+    // Do not append or save a second legacy cancellation message.
+    const activeAgentTurn = messages.some((message) => message.agentPending && message.agentSkyState);
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
+    }
+    if (activeAgentTurn) {
+      setIsLoading(false);
+      setIsThinking(false);
+      resetToolUi();
+      return;
     }
     // Cancel any server-side background chat jobs attached to running
     // assistant bubbles. Aborting the local fetch alone does not stop the
