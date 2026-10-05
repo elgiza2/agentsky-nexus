@@ -25,9 +25,13 @@ import { Route as ApiReadUrlRouteImport } from './routes/api/read-url'
 import { Route as ApiRenderPdfRouteImport } from './routes/api/render-pdf'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ApiWebSearchRouteImport } from './routes/api/web-search'
+import { Route as ApiAgentSplatRouteImport } from './routes/api/agent.$'
 import { Route as ApiPublicFxRouteImport } from './routes/api/public/fx'
 import { Route as ApiPublicGeoRouteImport } from './routes/api/public/geo'
 import { Route as ApiPublicRemindersTickRouteImport } from './routes/api/public/reminders-tick'
+import { Route as ApiPublicAgentToolsTokenRouteImport } from './routes/api/public/agent-tools.$token'
+import { Route as ApiPublicMediaStatusRunIdRouteImport } from './routes/api/public/media-status.$runId'
+import { Route as ApiPublicMediaRunIdIndexRouteImport } from './routes/api/public/media.$runId.$index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -109,6 +113,11 @@ const ApiWebSearchRoute = ApiWebSearchRouteImport.update({
   path: '/api/web-search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentSplatRoute = ApiAgentSplatRouteImport.update({
+  id: '/api/agent/$',
+  path: '/api/agent/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicFxRoute = ApiPublicFxRouteImport.update({
   id: '/api/public/fx',
   path: '/api/public/fx',
@@ -124,6 +133,24 @@ const ApiPublicRemindersTickRoute = ApiPublicRemindersTickRouteImport.update({
   path: '/api/public/reminders-tick',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAgentToolsTokenRoute =
+  ApiPublicAgentToolsTokenRouteImport.update({
+    id: '/api/public/agent-tools/$token',
+    path: '/api/public/agent-tools/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicMediaStatusRunIdRoute =
+  ApiPublicMediaStatusRunIdRouteImport.update({
+    id: '/api/public/media-status/$runId',
+    path: '/api/public/media-status/$runId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicMediaRunIdIndexRoute =
+  ApiPublicMediaRunIdIndexRouteImport.update({
+    id: '/api/public/media/$runId/$index',
+    path: '/api/public/media/$runId/$index',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -142,9 +169,13 @@ export interface FileRoutesByFullPath {
   '/api/render-pdf': typeof ApiRenderPdfRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/web-search': typeof ApiWebSearchRoute
+  '/api/agent/$': typeof ApiAgentSplatRoute
   '/api/public/fx': typeof ApiPublicFxRoute
   '/api/public/geo': typeof ApiPublicGeoRoute
   '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
+  '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -163,9 +194,13 @@ export interface FileRoutesByTo {
   '/api/render-pdf': typeof ApiRenderPdfRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/web-search': typeof ApiWebSearchRoute
+  '/api/agent/$': typeof ApiAgentSplatRoute
   '/api/public/fx': typeof ApiPublicFxRoute
   '/api/public/geo': typeof ApiPublicGeoRoute
   '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
+  '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -185,9 +220,13 @@ export interface FileRoutesById {
   '/api/render-pdf': typeof ApiRenderPdfRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/web-search': typeof ApiWebSearchRoute
+  '/api/agent/$': typeof ApiAgentSplatRoute
   '/api/public/fx': typeof ApiPublicFxRoute
   '/api/public/geo': typeof ApiPublicGeoRoute
   '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
+  '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -208,9 +247,13 @@ export interface FileRouteTypes {
     | '/api/render-pdf'
     | '/api/transcribe'
     | '/api/web-search'
+    | '/api/agent/$'
     | '/api/public/fx'
     | '/api/public/geo'
     | '/api/public/reminders-tick'
+    | '/api/public/agent-tools/$token'
+    | '/api/public/media-status/$runId'
+    | '/api/public/media/$runId/$index'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -229,9 +272,13 @@ export interface FileRouteTypes {
     | '/api/render-pdf'
     | '/api/transcribe'
     | '/api/web-search'
+    | '/api/agent/$'
     | '/api/public/fx'
     | '/api/public/geo'
     | '/api/public/reminders-tick'
+    | '/api/public/agent-tools/$token'
+    | '/api/public/media-status/$runId'
+    | '/api/public/media/$runId/$index'
   id:
     | '__root__'
     | '/'
@@ -250,9 +297,13 @@ export interface FileRouteTypes {
     | '/api/render-pdf'
     | '/api/transcribe'
     | '/api/web-search'
+    | '/api/agent/$'
     | '/api/public/fx'
     | '/api/public/geo'
     | '/api/public/reminders-tick'
+    | '/api/public/agent-tools/$token'
+    | '/api/public/media-status/$runId'
+    | '/api/public/media/$runId/$index'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -272,9 +323,13 @@ export interface RootRouteChildren {
   ApiRenderPdfRoute: typeof ApiRenderPdfRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   ApiWebSearchRoute: typeof ApiWebSearchRoute
+  ApiAgentSplatRoute: typeof ApiAgentSplatRoute
   ApiPublicFxRoute: typeof ApiPublicFxRoute
   ApiPublicGeoRoute: typeof ApiPublicGeoRoute
   ApiPublicRemindersTickRoute: typeof ApiPublicRemindersTickRoute
+  ApiPublicAgentToolsTokenRoute: typeof ApiPublicAgentToolsTokenRoute
+  ApiPublicMediaStatusRunIdRoute: typeof ApiPublicMediaStatusRunIdRoute
+  ApiPublicMediaRunIdIndexRoute: typeof ApiPublicMediaRunIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -391,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent/$': {
+      id: '/api/agent/$'
+      path: '/api/agent/$'
+      fullPath: '/api/agent/$'
+      preLoaderRoute: typeof ApiAgentSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/fx': {
       id: '/api/public/fx'
       path: '/api/public/fx'
@@ -410,6 +472,27 @@ declare module '@tanstack/react-router' {
       path: '/api/public/reminders-tick'
       fullPath: '/api/public/reminders-tick'
       preLoaderRoute: typeof ApiPublicRemindersTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/agent-tools/$token': {
+      id: '/api/public/agent-tools/$token'
+      path: '/api/public/agent-tools/$token'
+      fullPath: '/api/public/agent-tools/$token'
+      preLoaderRoute: typeof ApiPublicAgentToolsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/media-status/$runId': {
+      id: '/api/public/media-status/$runId'
+      path: '/api/public/media-status/$runId'
+      fullPath: '/api/public/media-status/$runId'
+      preLoaderRoute: typeof ApiPublicMediaStatusRunIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/media/$runId/$index': {
+      id: '/api/public/media/$runId/$index'
+      path: '/api/public/media/$runId/$index'
+      fullPath: '/api/public/media/$runId/$index'
+      preLoaderRoute: typeof ApiPublicMediaRunIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -432,9 +515,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRenderPdfRoute: ApiRenderPdfRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
   ApiWebSearchRoute: ApiWebSearchRoute,
+  ApiAgentSplatRoute: ApiAgentSplatRoute,
   ApiPublicFxRoute: ApiPublicFxRoute,
   ApiPublicGeoRoute: ApiPublicGeoRoute,
   ApiPublicRemindersTickRoute: ApiPublicRemindersTickRoute,
+  ApiPublicAgentToolsTokenRoute: ApiPublicAgentToolsTokenRoute,
+  ApiPublicMediaStatusRunIdRoute: ApiPublicMediaStatusRunIdRoute,
+  ApiPublicMediaRunIdIndexRoute: ApiPublicMediaRunIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
