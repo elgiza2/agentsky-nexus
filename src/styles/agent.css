@@ -11,7 +11,7 @@
   --ag-accent: hsl(var(--primary));
   --ag-accent-ink: hsl(var(--primary-foreground));
   --ag-danger: hsl(var(--destructive));
-  --ag-radius: 22px;
+  --ag-radius: 8px;
   --ag-shadow: 0 1px 2px hsl(240 10% 10% / 0.04), 0 8px 28px -12px hsl(240 10% 10% / 0.18);
   --ag-c1: #ff6aa2;
   --ag-c2: #ff9a62;
@@ -63,6 +63,10 @@
 .ag-orb__dots i:nth-child(3) { bottom: 10%; right: 6%; background: var(--ag-c3); opacity: .7; }
 
 .ag-orb[data-state="thinking"] .ag-orb__eyes { animation: ag-look 2.4s ease-in-out infinite; }
+.ag-orb[data-state="awakening"] .ag-orb__body { animation: ag-wake 2.6s ease-in-out infinite; }
+.ag-orb[data-state="awakening"] .ag-orb__eye { animation: ag-wake-eyes 2.6s ease-in-out infinite; }
+@keyframes ag-wake { 0%,100% { transform: translateY(3%) scale(1.02,.94); } 55% { transform: translateY(-4%) scale(.97,1.04); } }
+@keyframes ag-wake-eyes { 0%,100% { transform: scaleY(.12); } 45%,65% { transform: scaleY(.8); } }
 .ag-orb[data-state="thinking"] .ag-orb__dots { opacity: 1; }
 .ag-orb[data-state="thinking"] .ag-orb__body { animation-duration: 3.5s, 2.2s; }
 
