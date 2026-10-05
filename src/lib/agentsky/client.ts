@@ -1,5 +1,6 @@
 /** @doc Browser client for /api/agent/* — the only way the UI talks to the AgentSky agent. */
 import { authenticatedFetch } from "@/lib/authenticatedFetch";
+import { readEventStream } from "./readEventStream";
 
 export type AgentColor = "aurora" | "ocean" | "ember" | "mint" | "sun" | "rose" | "mono";
 
@@ -89,32 +90,9 @@ export type RawEvent = {
   stop_reason?: { type: string };
 };
 
-/** Open the standing SSE stream. Resolves when the stream closes. */
-export async function openStream(sessionId: string, onEvent: (e: RawEvent) => void, signal: AbortSignal) {
+/** A true callback result closes this subscription at the logical end of a turn. */
+export async function openStream(sessionId: string, onEvent: (e: RawEvent) => boolean | void, signal: AbortSignal) {
   const res = await authenticatedFetch(`/api/agent/sessions/${sessionId}/stream`, { signal });
   if (!res.ok || !res.body) throw new AgentApiError(res.status, "stream", "Stream failed");
-  const reader = res.body.getReader();
-  const dec = new TextDecoder();
-  let buf = "";
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let i: number;
-    while ((i = buf.indexOf("\n\n")) >= 0) {
-      const chunk = buf.slice(0, i);
-      buf = buf.slice(i + 2);
-      const data = chunk
-        .split("\n")
-        .filter((l) => l.startsWith("data:"))
-        .map((l) => l.slice(5).trimStart())
-        .join("\n");
-      if (!data) continue;
-      try {
-        onEvent(JSON.parse(data));
-      } catch {
-        /* ignore malformed frame */
-      }
-    }
-  }
+  await readEventStream(res.body, onEvent);
 }

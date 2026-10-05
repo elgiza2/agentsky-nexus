@@ -13,8 +13,8 @@ import type { SlidesOutline } from "@/lib/slidesOutlineParser";
 import type { MediaPlan } from "@/components/chat/media/MediaPlanCard";
 import type { MediaSceneResult } from "@/components/chat/media/MediaResultCard";
 import type { ModelEffort } from "@/lib/chatModelPreferences";
-import type { Card as AgentSkyCard } from "@/lib/agentsky/transcript";
-import type { AgentRequest } from "@/lib/agentsky/client";
+import type { Card as AgentSkyCard, Step } from "@/lib/agentsky/transcript";
+import type { AgentRequest, AgentColor } from "@/lib/agentsky/client";
 
 export interface ProductResult {
   title: string;
@@ -139,6 +139,10 @@ export interface Message {
   agentSkySessionId?: string;
   agentSkyCards?: AgentSkyCard[];
   agentSkyRequests?: AgentRequest[];
+  agentSkyAgent?: { id: string; name: string; color: AgentColor };
+  agentSkyState?: "awakening" | "thinking" | "tool" | "talking" | "done" | "error" | "idle";
+  agentSkySteps?: Step[];
+  agentSkyStopped?: boolean;
 
 }
 

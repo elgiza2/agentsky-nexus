@@ -144,3 +144,9 @@
 - [ ] Agent creation as full page instead of modal
 - [ ] Project-wide cleanup
 - [ ] Polish the full-page Agents and Tasks screens to match Megsy's original visual language
+
+## Approved chat unification (October 5)
+- [ ] End AgentSky requests on terminal events, preserve Stop and queued sends.
+- [ ] Show the selected agent identity, awakening, live stacked steps and real helpers in the original chat.
+- [ ] Replace alternate agent sidebar with the original site navigation and polish Agents/Tasks.
+- [ ] Verify stream lifecycle tests and visual states; authenticated live check depends on external sign-in.
