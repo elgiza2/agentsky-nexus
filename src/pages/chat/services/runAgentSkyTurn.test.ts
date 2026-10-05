@@ -30,6 +30,7 @@ beforeEach(() => {
   mocks.session.mockResolvedValue({ session: { id: "session", agentId: "agent" } });
   mocks.events.mockResolvedValue({ events: [], status: "idle" });
   mocks.requests.mockResolvedValue({ requests: [] });
+  mocks.interrupt.mockResolvedValue({ status: "idle" });
 });
 describe("original chat agent turn lifecycle", () => {
   it("returns terminal signal, releases loading and saves identity and completed response", async () => {
