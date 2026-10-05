@@ -413,13 +413,13 @@ const AppSidebar = ({
     match: (p: string) => boolean;
   }> = [
     {
-      label: useUserLang() === "ar-eg" ? "الوكلاء" : "Agents",
+      label: language === "ar-eg" ? "الوكلاء" : "Agents",
       Icon: Bot,
       path: "/agents",
       match: (p: string) => p.startsWith("/agents"),
     },
     {
-      label: useUserLang() === "ar-eg" ? "المهام" : "Tasks",
+      label: language === "ar-eg" ? "المهام" : "Tasks",
       Icon: ListTodo,
       path: "/tasks",
       match: (p: string) => p === "/tasks" || p.startsWith("/tasks/"),

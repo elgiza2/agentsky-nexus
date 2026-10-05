@@ -29,6 +29,7 @@ type Args = {
   ) => Promise<string | undefined>;
   ownInsertedIdsRef: React.MutableRefObject<Set<string>>;
   onRequests: (requests: AgentRequest[]) => void;
+  onSession: (sessionId: string) => void;
 };
 
 const toToolParts = (turn?: AgentTurn): ToolPart[] | undefined =>
@@ -65,6 +66,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
       await agentApi.send(sid, args.text, args.images);
     }
     const activeSid = sid;
+    args.onSession(activeSid);
     controller.signal.addEventListener("abort", () => void agentApi.interrupt(activeSid).catch(() => undefined), { once: true });
 
     const apply = () => {
