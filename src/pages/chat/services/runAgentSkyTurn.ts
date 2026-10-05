@@ -138,9 +138,19 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
       finally { checking = false; }
     }, 2500);
     try {
-      await openStream(activeSid, accept, feedController.signal);
-    } catch (error) {
-      if (!terminalSeen) throw error;
+      // A dropped connection never ends the task: reconnect until a terminal event arrives.
+      let failures = 0;
+      while (!terminalSeen && !controller.signal.aborted) {
+        try {
+          await openStream(activeSid, accept, feedController.signal);
+          failures = 0;
+        } catch {
+          if (terminalSeen || controller.signal.aborted) break;
+          failures++;
+        }
+        if (terminalSeen || controller.signal.aborted) break;
+        await new Promise((r) => setTimeout(r, Math.min(15000, 1000 * 2 ** Math.min(failures, 4))));
+      }
     } finally {
       clearInterval(reconcile);
       controller.signal.removeEventListener("abort", abortFeed);
