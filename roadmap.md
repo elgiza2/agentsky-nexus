@@ -158,6 +158,10 @@
 - [x] Review the real signed-in chat using the supplied test account.
 
 ## Requested polish and resilience (October 5)
+- [ ] Paid-only Hypit media turns as yellow higgsfield, lowest verified model costs, and task visibility.
+- [x] Pink/blue Megsy, internal thinking waveform, greeting headline removal, sidebar icon and hidden Tasks entry.
+- [ ] Refresh active pricing claims without changing existing prices.
+- [ ] Rebuild login/signup to match the supplied Cue layout with Megsy's character; verify existing sign-in flows.
 - [x] Redesign agent thinking, sleeping and completed appearance; remove the white-looking body and refine colors after visual selection.
 - [x] Keep long provider tasks connected or reconcile them after transient stream/network interruptions.
 - [x] Present real activity badges for every tool, including search, code, Python, images and video, with a readable fallback.

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { m as motion } from "framer-motion";
-import { t as uiT, useUserLang } from "@/lib/authI18n";
+import { useUserLang } from "@/lib/authI18n";
 import { useLocation } from "react-router-dom";
 import { AgentOrb, type OrbState } from "@/components/agent/AgentOrb";
 import { useWorkspaceStore } from "@/lib/agentsky/store";
@@ -13,7 +13,6 @@ interface DesktopGreetingProps {
 
 // Keys resolved through the shared UI dictionary so the hero line follows the
 // user's language instead of always rendering English.
-const entryTaglineKeys = ["greeting1"];
 
 /**
  * Chat empty-state greeting. The line changes once per page entry and then
@@ -22,7 +21,6 @@ const entryTaglineKeys = ["greeting1"];
  */
 export const DesktopGreeting = ({ userName }: DesktopGreetingProps) => {
   const lang = useUserLang();
-  const [taglineIdx, setTaglineIdx] = useState(0);
   const [presence, setPresence] = useState<OrbState>("hello");
   const location = useLocation();
   const { agents, tier } = useWorkspaceStore();
@@ -36,15 +34,6 @@ export const DesktopGreeting = ({ userName }: DesktopGreetingProps) => {
     return () => { window.clearTimeout(hello); window.clearTimeout(sleep); };
   }, [agent?.id]);
 
-  useEffect(() => {
-    const key = "megsy:desktop-greeting-index";
-    const previous = Number(window.localStorage.getItem(key) || "-1");
-    const next = Number.isFinite(previous) ? (previous + 1) % entryTaglineKeys.length : 0;
-    window.localStorage.setItem(key, String(next));
-    setTaglineIdx(next);
-  }, []);
-
-  const tagline = uiT(entryTaglineKeys[taglineIdx], lang);
 
 
   return (
@@ -66,28 +55,9 @@ export const DesktopGreeting = ({ userName }: DesktopGreetingProps) => {
             onPointerEnter={() => setPresence("hello")}
             onPointerLeave={() => setPresence("idle")}
           >
-            <AgentOrb size={88} state={presence} color={agent?.color ?? "ocean"} />
+            <AgentOrb size={88} state={presence} color={agent?.isDefault ? "aurora" : agent?.color ?? "aurora"} />
           </motion.div>
           <p className="mb-2 text-sm text-muted-foreground">{lang === "ar-eg" ? `أهلاً${userName ? ` يا ${userName.split(" ")[0]}` : ""}، أنا ${agent?.name ?? "Megsy"}` : `Hello${userName ? `, ${userName.split(" ")[0]}` : ""}. I'm ${agent?.name ?? "Megsy"}`}</p>
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <h1
-              data-greeting
-              className="max-w-3xl text-center text-[26px] font-normal leading-snug tracking-[-0.01em] text-foreground md:text-[32px] lg:text-[36px]"
-              style={{
-                fontFamily:
-                  lang === "ar-eg"
-                    ? 'var(--font-arabic-ui-stack, "Readex Pro", "Cairo", system-ui, sans-serif)'
-                    : '"Instrument Serif", "ITC Garamond Std Narrow", Georgia, serif',
-              }}
-            >
-              {tagline}
-            </h1>
-          </motion.div>
 
         </motion.div>
       </div>
