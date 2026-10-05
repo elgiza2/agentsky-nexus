@@ -9,7 +9,7 @@ import {
 import { AnimatedShell } from "./AnimatedShell";
 import {
   // chat
-
+  ChatPage,
   SharedChatPage,
   SharedSitePage,
   ResearchPreviewPage,
@@ -78,10 +78,8 @@ import {
   RestorePurchasePage,
   NotFoundPage,
   SplashTestPage,
-  AgentChatPage,
   AgentsPage,
   AgentNewPage,
-  StudioPage,
   AgentTasksPage,
 } from "./lazyPages";
 
@@ -92,14 +90,12 @@ const toPricing = <RetiredRedirect to="/pricing" />;
 export const AppRoutes = ({ currentUserId }: { currentUserId: string | null }) => (
   <>
     {/* ── Entry ──────────────────────────────────────────────── */}
-    <Route path="/" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
-    <Route path="/chat" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
-    <Route path="/chat/:sessionId" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
+    <Route path="/" element={<ChatPage />} />
+    <Route path="/chat" element={<ChatPage />} />
     <Route path="/agents" element={<ProtectedRoute><AgentsPage /></ProtectedRoute>} />
     <Route path="/agents/new" element={<ProtectedRoute><AgentNewPage /></ProtectedRoute>} />
-    <Route path="/studio" element={<ProtectedRoute><StudioPage /></ProtectedRoute>} />
     <Route path="/welcome" element={<WelcomePage />} />
-    <Route path="/index" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
+    <Route path="/index" element={<ChatPage />} />
     <Route path="/share/:shareId" element={<SharedChatPage />} />
 
     {/* ── Auth hub — one page, animated inner views ──────────── */}

@@ -13,6 +13,7 @@ import type { SlidesOutline } from "@/lib/slidesOutlineParser";
 import type { MediaPlan } from "@/components/chat/media/MediaPlanCard";
 import type { MediaSceneResult } from "@/components/chat/media/MediaResultCard";
 import type { ModelEffort } from "@/lib/chatModelPreferences";
+import type { Card as AgentSkyCard } from "@/lib/agentsky/transcript";
 
 export interface ProductResult {
   title: string;
@@ -133,6 +134,9 @@ export interface Message {
   };
   /** Friendly display name of the model that produced this assistant message. */
   modelLabel?: string;
+  /** AgentSky session state rendered inside the original Megsy transcript. */
+  agentSkySessionId?: string;
+  agentSkyCards?: AgentSkyCard[];
 
 }
 
