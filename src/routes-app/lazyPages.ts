@@ -13,6 +13,7 @@ export const Analytics = lazy(() => import("@vercel/analytics/react").then((m) =
 export const SpeedInsights = lazy(() => import("@vercel/speed-insights/react").then((m) => ({ default: m.SpeedInsights })));
 
 /* ── Chat ─────────────────────────────────────────────────────── */
+export const ChatPage = lazy(() => import("@/pages/chat/ChatPage"));
 export const SharedChatPage = lazy(() => import("@/pages/chat/SharedChatPage"));
 export const SharedSitePage = lazy(() => import("@/pages/SharedSitePage"));
 export const ResearchPreviewPage = lazy(() => import("@/pages/chat/ResearchPreviewPage"));
@@ -92,8 +93,6 @@ export const TasksPage = lazy(() => import("@/pages/tasks/TasksPage"));
 export const ManusKeysPage = lazy(() => import("@/pages/admin/ManusKeysPage"));
 export const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
 
-export const AgentChatPage = lazy(() => import("@/pages/agent/AgentChatPage"));
 export const AgentsPage = lazy(() => import("@/pages/agent/AgentsPage").then((m) => ({ default: m.AgentsPage })));
 export const AgentNewPage = lazy(() => import("@/pages/agent/AgentsPage").then((m) => ({ default: m.AgentNewPage })));
-export const StudioPage = lazy(() => import("@/pages/agent/StudioPage"));
 export const AgentTasksPage = lazy(() => import("@/pages/agent/AgentTasksPage"));

@@ -19,14 +19,14 @@ const NEXT_HOPS: Array<{ match: RegExp; hops: Loader[] }> = [
     match: /^\/(welcome)?$/,
     hops: [
       () => import("@/pages/auth/AuthPage"),
-      () => import("@/pages/agent/AgentChatPage"),
+      () => import("@/pages/chat/ChatPage"),
     ],
   },
   // Auth → the chat is the only destination after signing in.
   {
     match: /^\/auth(\/|$)/,
     hops: [
-      () => import("@/pages/agent/AgentChatPage"),
+      () => import("@/pages/chat/ChatPage"),
       () => import("@/pages/settings/SettingsPage"),
     ],
   },
