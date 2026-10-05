@@ -64,7 +64,7 @@ async function fullAgents(userId: string, origin: string) {
     description: a.llm || "", color: ["ocean", "mint", "rose", "ember"][index % 4],
     prompt: "", isDefault: false, isTemplate: true, createdAt: a.createdAt,
   }));
-  return [...details.filter((a) => !a.metadata?.templateId).map(agentView), ...catalogue].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+  return [...details.filter((a) => !a.metadata?.templateId || a.metadata?.kind === "media").map(agentView), ...catalogue].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 }
 
 async function handle(request: Request, splat: string): Promise<Response> {
