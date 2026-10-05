@@ -130,17 +130,17 @@
 - [ ] Buying a pack end to end not tested with a real payment.
 
 ## Next pass (Oct 2026) — requested
-- [ ] Replace image/video/tool providers with AgentSky (key in AGENTSKY_API_KEY secret)
+- [x] Replace image/video/tool providers with AgentSky (key in AGENTSKY_API_KEY secret)
 - [ ] Agent = OpenClaw on gpt-5.6-luna with sub-agents + Manus-style task management
 - [ ] Free vs subscriber model tiers for image/video
 - [ ] GrokBot-style animated orb (idle/thinking/tool/done) with per-agent gradient, used across UI
-- [ ] Fix: stop/cancel message doesn't work
-- [ ] Fix: agent says it can't make images/videos
-- [ ] Fix: internal system commands leak into chat
-- [ ] Fix: send button re-enables while thinking; allow queued messages sent after finish
-- [ ] Tasks button in sidebar; AI assigns tasks
-- [ ] Stacked thinking steps (searched X, clicked Y…) with live internal reasoning
-- [ ] Clean image/video cards + generation UI; approval cards; question cards
+- [x] Fix: stop/cancel message doesn't work
+- [x] Fix: agent says it can't make images/videos
+- [x] Fix: internal system commands leak into chat
+- [x] Fix: send button re-enables while thinking; allow queued messages sent after finish
+- [x] Tasks button in sidebar; AI assigns tasks
+- [x] Stacked thinking steps (searched X, clicked Y…) with live internal reasoning
+- [x] Clean image/video cards + generation UI; approval cards; question cards
 - [ ] Agent creation as full page instead of modal
 - [ ] Project-wide cleanup
 - [ ] Polish the full-page Agents and Tasks screens to match Megsy's original visual language
