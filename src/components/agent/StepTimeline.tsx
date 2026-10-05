@@ -33,7 +33,7 @@ function StepRow({ step, lang }: { step: Step; lang: "en" | "ar" }) {
   return (
     <div className="ag-step ag-fade-in" data-status={step.status} data-kind={step.kind}>
       <span className="ag-step__icon">
-        {step.kind === "helper" ? <AgentOrb size={20} color="mint" state={step.status === "active" ? "tool" : step.status === "error" ? "error" : "done"} /> : <Icon size={12} strokeWidth={2.4} />}
+        <Icon size={12} strokeWidth={2.4} />
       </span>
       <div className="min-w-0 flex-1">
         <Button variant="ghost"
