@@ -120,7 +120,7 @@ export const preloadCommonRoutes = () => {
   const routeTasks: Array<() => Promise<unknown>> = isMobile
     ? [() => import("@/pages/auth/AuthPage")]
     : [
-        () => import("@/pages/chat/ChatPage"),
+        () => import("@/pages/agent/AgentChatPage"),
         () => import("@/pages/auth/AuthPage"),
         () => import("@/pages/marketing/PricingPage"),
       ];
