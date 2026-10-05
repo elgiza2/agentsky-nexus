@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   createSession: vi.fn(), session: vi.fn(), events: vi.fn(), send: vi.fn(), interrupt: vi.fn(), requests: vi.fn(), stream: vi.fn(),
 }));
 vi.mock("@/lib/agentsky/client", () => ({ agentApi: mocks, openStream: mocks.stream }));
-vi.mock("@/lib/agentsky/store", () => ({ loadWorkspace: vi.fn(), workspace: { agent: () => ({ id: "agent", name: "Researcher", color: "ocean" }), upsertSession: vi.fn() } }));
+vi.mock("@/lib/agentsky/store", () => ({ loadWorkspace: vi.fn(), workspace: { agent: () => ({ id: "agent", name: "Researcher", color: "ocean" }), upsertSession: vi.fn(), addAgent: vi.fn() } }));
 
 function setup(sessionId?: string) {
   let messages: Message[] = [];
@@ -33,12 +33,21 @@ beforeEach(() => {
   mocks.interrupt.mockResolvedValue({ status: "idle" });
 });
 describe("original chat agent turn lifecycle", () => {
+  it("routes media to Hypit and preserves the yellow Higgsfield identity", async () => {
+    const test = setup("old-session"); test.args.text = "Create an image of a cat";
+    mocks.createSession.mockResolvedValue({ session: { id: "media-session", agentId: "hypit-owned" }, agent: { id: "hypit-owned", name: "higgsfield", color: "sun" } });
+    mocks.stream.mockImplementation(async (_sid, callback) => { callback(running); callback(idle); });
+    await runAgentSkyTurn(test.args);
+    expect(mocks.createSession).toHaveBeenCalledWith(expect.objectContaining({ agentId: "higgsfield" }));
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(test.messages()[1].agentSkyAgent).toMatchObject({ name: "higgsfield", color: "sun" });
+  });
   it("wakes on the first turn only and thinks immediately on subsequent turns", async () => {
     const first = setup();
-    mocks.stream.mockImplementation(async () => { expect(first.messages()[1].agentSkyState).toBe("awakening"); });
+    mocks.stream.mockImplementation(async (_sid, callback) => { expect(first.messages()[1].agentSkyState).toBe("awakening"); callback(running); callback(idle); });
     await runAgentSkyTurn(first.args);
     const next = setup("session");
-    mocks.stream.mockImplementation(async () => { expect(next.messages()[1].agentSkyState).toBe("thinking"); });
+    mocks.stream.mockImplementation(async (_sid, callback) => { expect(next.messages()[1].agentSkyState).toBe("thinking"); callback(running); callback(idle); });
     await runAgentSkyTurn(next.args);
   });
   it("returns terminal signal, releases loading and saves identity and completed response", async () => {

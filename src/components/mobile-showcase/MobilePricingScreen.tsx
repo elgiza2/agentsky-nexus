@@ -88,16 +88,16 @@ export default function MobilePricingScreen({
   const features = useMemo(() => {
     const base = isAr
       ? [
-          { icon: Monitor, text: "كمبيوتر سحابي حقيقي" },
-          { icon: Clock, text: "مهام حتى 4 ساعات" },
-          { icon: Bot, text: "3 وكلاء متوازيين" },
+          { icon: Monitor, text: "بحث وتصفح وبرمجة في نفس الشات" },
+          { icon: Clock, text: "متابعة خطوات المهمة مباشرة" },
+          { icon: Bot, text: "تغيير الوكيل للمشتركين" },
           { icon: Search, text: "بحث عميق موثّق بالمصادر" },
           { icon: InfinityIcon, text: "دردشة بلا حدود" },
         ]
       : [
-          { icon: Monitor, text: "A real cloud computer" },
-          { icon: Clock, text: "Tasks up to 4 hours" },
-          { icon: Bot, text: "3 agents in parallel" },
+          { icon: Monitor, text: "Search, browsing and coding in chat" },
+          { icon: Clock, text: "Live task progress" },
+          { icon: Bot, text: "Subscriber-only agent switching" },
           { icon: Search, text: "Deep research with citations" },
           { icon: InfinityIcon, text: "Unlimited chat" },
         ];
@@ -115,7 +115,7 @@ export default function MobilePricingScreen({
 
     return [head, ...base, {
       icon: MegsyFeatureIcon,
-      text: isAr ? "الصورة: 2 رصيد · الفيديو: 25 رصيد" : "Images: 2 credits · Videos: 25 credits",
+      text: isAr ? "صور وفيديو Higgsfield للمشتركين فقط" : "Higgsfield images & video — subscribers only",
     }];
   }, [isAr, isYearly]);
 

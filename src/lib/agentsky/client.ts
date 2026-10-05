@@ -56,7 +56,7 @@ export const agentApi = {
   deleteAgent: (id: string) => req("agents/" + id, { method: "DELETE" }),
   sessions: () => req<{ sessions: SessionInfo[] }>("sessions"),
   createSession: (p: { agentId?: string; text: string; images?: string[] }) =>
-    req<{ session: SessionInfo }>("sessions", { method: "POST", body: JSON.stringify(p) }),
+    req<{ session: SessionInfo; agent?: AgentInfo }>("sessions", { method: "POST", body: JSON.stringify(p) }),
   session: (id: string) => req<{ session: SessionInfo }>("sessions/" + id),
   renameSession: (id: string, title: string) => req("sessions/" + id, { method: "PATCH", body: JSON.stringify({ title }) }),
   deleteSession: (id: string) => req("sessions/" + id, { method: "DELETE" }),
@@ -67,7 +67,7 @@ export const agentApi = {
   requests: (id: string) => req<{ requests: AgentRequest[]; sessions: any[] }>(`sessions/${id}/requests`),
   tasks: () =>
     req<{
-      tasks: { id: string; title: string | null; attention: string; statusLine: string | null; openRequests: number; helpers: number; lastActivityAt: string }[];
+      tasks: { id: string; agentId: string; title: string | null; attention: string; statusLine: string | null; openRequests: number; helpers: number; lastActivityAt: string }[];
     }>("tasks"),
   taskSessions: (id: string) => req<{ sessions: { id: string }[] }>(`tasks/${encodeURIComponent(id)}`),
   media: (p: { kind: "image" | "video"; prompt: string; aspect?: string; duration?: number; model?: string; idempotencyKey?: string }) =>

@@ -1,7 +1,7 @@
 /** @doc Media generation through the AgentSky run API, split into free and subscriber tiers.
  *  Generated media is never stored by us: a signed /api/public/media link re-reads the run
  *  from AgentSky and streams the bytes, so links keep working without a storage bucket. */
-import { gateway, sign, verify } from "./agentsky.server";
+import { AgentSkyError, gateway, sign, verify } from "./agentsky.server";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/api/supabaseServerConfig";
 
 export type Tier = "free" | "pro";
@@ -23,35 +23,17 @@ export const MEDIA_MODELS: MediaModel[] = [
   {
     id: "img-fast",
     kind: "image",
-    label: "Megsy Image",
-    tier: "free",
+    label: "Higgsfield Image",
+    tier: "pro",
     provider: "google",
     endpoint: "gemini-3.1-flash-image-preview",
     build: ({ prompt, aspect }) => ({ prompt, aspect_ratio: aspect }),
   },
   {
-    id: "img-pro",
-    kind: "image",
-    label: "Megsy Image Pro",
-    tier: "pro",
-    provider: "google",
-    endpoint: "gemini-3-pro-image",
-    build: ({ prompt, aspect }) => ({ prompt, aspect_ratio: aspect }),
-  },
-  {
-    id: "img-gpt",
-    kind: "image",
-    label: "GPT Image 2",
-    tier: "pro",
-    provider: "openai",
-    endpoint: "gpt-image-2",
-    build: ({ prompt, aspect }) => ({ prompt, aspect_ratio: aspect, quality: "medium" }),
-  },
-  {
     id: "vid-fast",
     kind: "video",
-    label: "Megsy Video",
-    tier: "free",
+    label: "Higgsfield Video",
+    tier: "pro",
     provider: "wan",
     endpoint: "wan2.7-t2v",
     build: ({ prompt, aspect, duration }) => ({
@@ -61,40 +43,14 @@ export const MEDIA_MODELS: MediaModel[] = [
       resolution: "720P",
     }),
   },
-  {
-    id: "vid-seedance",
-    kind: "video",
-    label: "Seedance 2.0",
-    tier: "pro",
-    provider: "bytedance",
-    endpoint: "seedance-2.0-fast",
-    build: ({ prompt, aspect, duration }) => ({
-      prompt,
-      ratio: ratio(aspect, ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9"], "adaptive"),
-      duration: Math.min(Math.max(duration ?? 5, 4), 10),
-      resolution: "720p",
-      generate_audio: true,
-    }),
-  },
-  {
-    id: "vid-h3",
-    kind: "video",
-    label: "MiniMax H3",
-    tier: "pro",
-    provider: "minimax",
-    endpoint: "MiniMax-H3",
-    build: ({ prompt, aspect, duration }) => ({
-      prompt,
-      aspect_ratio: ratio(aspect, ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"], "16:9"),
-      duration_s: Math.min(Math.max(duration ?? 5, 3), 10),
-      resolution: "768p",
-    }),
-  },
+
 ];
 
 export function pickModel(kind: MediaKind, tier: Tier, requested?: string | null): MediaModel {
-  const allowed = MEDIA_MODELS.filter((m) => m.kind === kind && (tier === "pro" || m.tier === "free"));
-  return allowed.find((m) => m.id === requested) ?? allowed.find((m) => m.tier === tier) ?? allowed[0];
+  if (tier === "free") throw new AgentSkyError(402, "upgrade_required", "الصور والفيديو متاحين للمشتركين بس.");
+  const model = MEDIA_MODELS.find((m) => m.kind === kind);
+  if (!model) throw new AgentSkyError(400, "invalid_model", "Media model unavailable");
+  return model;
 }
 
 export async function userTier(userId: string): Promise<Tier> {
@@ -195,5 +151,5 @@ export async function waitRun(runId: string, origin: string, ms: number): Promis
 }
 
 export function publicModels(tier: Tier) {
-  return MEDIA_MODELS.map((m) => ({ id: m.id, kind: m.kind, label: m.label, tier: m.tier, locked: tier === "free" && m.tier === "pro" }));
+  return MEDIA_MODELS.map((m) => ({ id: m.id, kind: m.kind, label: m.label, tier: m.tier, locked: tier === "free" }));
 }

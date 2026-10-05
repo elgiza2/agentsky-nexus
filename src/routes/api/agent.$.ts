@@ -15,7 +15,6 @@ import {
   streamSession,
 } from "@/lib/agentsky/agentsky.server";
 import {
-  consumeFreeVideo,
   pickModel,
   publicModels,
   runStatusToken,
@@ -65,14 +64,13 @@ async function fullAgents(userId: string, origin: string) {
     description: a.llm || "", color: ["ocean", "mint", "rose", "ember"][index % 4],
     prompt: "", isDefault: false, isTemplate: true, createdAt: a.createdAt,
   }));
-  return [...details.filter((a) => !a.metadata?.templateId).map(agentView), ...catalogue].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+  return [...details.filter((a) => !a.metadata?.templateId || a.metadata?.kind === "media").map(agentView), ...catalogue].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 }
 
 async function handle(request: Request, splat: string): Promise<Response> {
   const auth = await authenticateRequest(request);
   if (!auth) return j({ error: { code: "unauthorized", message: "Please sign in" } }, 401);
   const uid = auth.user.id;
-  const jwt = (request.headers.get("authorization") || "").slice(7);
   const origin = publicOrigin(request);
   const parts = splat.split("/").filter(Boolean);
   const method = request.method;
@@ -113,6 +111,13 @@ async function handle(request: Request, splat: string): Promise<Response> {
     }
   }
 
+  // Gate media intent server-side before creating or continuing any paid work.
+  if (parts[0] === "sessions" && method === "POST" && (!parts[1] || parts[2] === "messages")) {
+    const { detectMediaIntent } = await import("@/lib/agentsky/mediaIntent");
+    if ((body?.agentId === "higgsfield" || detectMediaIntent(String(body?.text || ""))) && await userTier(uid) === "free")
+      return j({ error: { code: "upgrade_required", message: "الصور والفيديو متاحين للمشتركين بس." } }, 402);
+  }
+
   // Sessions
   if (parts[0] === "sessions") {
     const sid = parts[1];
@@ -134,7 +139,8 @@ async function handle(request: Request, splat: string): Promise<Response> {
         const defaultAgent = await ensureDefaultAgent(uid, origin);
         if (requestedId !== defaultAgent.id) return j({ error: { code: "upgrade_required", message: "تغيير الوكيل متاح للمشتركين بس." } }, 402);
       }
-      const agentId = (await resolveUserAgent(uid, origin, requestedId)).id;
+      const selectedAgent = await resolveUserAgent(uid, origin, requestedId);
+      const agentId = selectedAgent.id;
       const content = contentOf(body);
       if (!content.length) return j({ error: { code: "invalid_request", message: "Empty message" } }, 400);
       const title = String(body?.text || "New chat").replace(/\s+/g, " ").slice(0, 80) || "New chat";
@@ -148,7 +154,7 @@ async function handle(request: Request, splat: string): Promise<Response> {
           initial_events: [{ type: "user.message", content }],
         }),
       });
-      return j({ session: { id: session.id, agentId, title, status: session.status } }, 201);
+      return j({ session: { id: session.id, agentId, title, status: session.status }, agent: agentView(selectedAgent) }, 201);
     }
     if (!sid) return j({ error: { code: "not_found", message: "Not found" } }, 404);
     const session = await getOwnedSession(uid, sid);
@@ -211,6 +217,7 @@ async function handle(request: Request, splat: string): Promise<Response> {
       .filter((t) => t.agent_id && ids.has(t.agent_id) && !t.archived)
       .map((t) => ({
         id: t.id,
+        agentId: t.agent_id,
         title: t.title,
         attention: t.attention,
         statusLine: t.status_line,
@@ -228,11 +235,6 @@ async function handle(request: Request, splat: string): Promise<Response> {
     if (!prompt) return j({ error: { code: "invalid_request", message: "Prompt is required" } }, 400);
     const tier = await userTier(uid);
     const model = pickModel(kind, tier, body?.model);
-    if (kind === "video" && tier === "free") {
-      const ok = await consumeFreeVideo(uid, jwt);
-      if (!ok)
-        return j({ error: { code: "upgrade_required", message: "Your free video for today is used. Upgrade for more." } }, 402);
-    }
     const idem = String(body?.idempotencyKey || crypto.randomUUID()).slice(0, 100);
     const run = await startRun(
       model,

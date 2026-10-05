@@ -126,11 +126,11 @@ export default function DesktopPricing({ plans, faqs, isYearly, setIsYearly, loa
           <p className="text-[11px] font-semibold uppercase text-muted-foreground">{t("Clear usage")}</p>
           <h2 className="mt-4 text-[28px] font-semibold">{t("You always know the cost.")}</h2>
           <dl className="mt-10 divide-y divide-border border-y border-border text-[14px]">
-            {[["Chat", "Free"], ["Image", "2 credits"], ["Video", "25 credits"], ["Agent", "1–50 credits"]].map(([label, value]) => (
+            {[["Chat", "Free"], ["Images & video", "Subscribers only"], ["Agent switching", "Subscribers only"], ["Included credits", "1,000 / month"]].map(([label, value]) => (
               <div key={label} className="flex items-center justify-between py-4"><dt>{t(label)}</dt><dd className="font-semibold">{t(value)}</dd></div>
             ))}
           </dl>
-          <p className="mt-8 text-[13px] leading-relaxed text-muted-foreground">{t("Free accounts get 10 welcome credits and 5 daily credits. Pro members can add 100, 300 or 700-credit packs.")}</p>
+          <p className="mt-8 text-[13px] leading-relaxed text-muted-foreground">{t("Free accounts cannot generate images or videos, or switch agents. Media is created directly in chat for subscribers when the provider is available.")}</p>
         </aside>
       </section>
 
@@ -140,7 +140,7 @@ export default function DesktopPricing({ plans, faqs, isYearly, setIsYearly, loa
 
       {/* Free line */}
       <div className="flex items-center justify-between border-b border-border py-8 text-[14px]">
-        <span className="text-muted-foreground">{t("Not ready? Chat stays free, with 5 credits refreshed daily.")}</span>
+        <span className="text-muted-foreground">{t("Not ready? Chat with Megsy stays free.")}</span>
         <a href="mailto:support@megsyai.com" className="font-semibold underline underline-offset-4">
           {t("Talk to us")}
         </a>
