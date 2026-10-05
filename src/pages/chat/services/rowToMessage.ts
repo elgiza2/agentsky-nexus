@@ -120,6 +120,8 @@ export function rowToMessage(
     metadata: meta,
     timing: meta.timing && typeof meta.timing === "object" ? meta.timing : undefined,
     modelLabel: typeof meta.modelLabel === "string" ? meta.modelLabel : undefined,
+    agentSkySessionId: typeof meta.agentSkySessionId === "string" ? meta.agentSkySessionId : undefined,
+    agentSkyCards: Array.isArray(meta.agentSkyCards) ? meta.agentSkyCards : undefined,
     interrupted: interrupted || undefined,
   } as Message;
 }
