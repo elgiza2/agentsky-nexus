@@ -4,7 +4,7 @@ import type { Message } from "../chatConstants";
 import type { RawEvent } from "@/lib/agentsky/client";
 
 const mocks = vi.hoisted(() => ({
-  createSession: vi.fn(), session: vi.fn(), events: vi.fn(), send: vi.fn(), interrupt: vi.fn(), requests: vi.fn(), stream: vi.fn(),
+  createSession: vi.fn(), session: vi.fn(), events: vi.fn(), files: vi.fn(), send: vi.fn(), interrupt: vi.fn(), requests: vi.fn(), stream: vi.fn(),
 }));
 vi.mock("@/lib/agentsky/client", () => ({ agentApi: mocks, openStream: mocks.stream }));
 vi.mock("@/lib/agentsky/store", () => ({ loadWorkspace: vi.fn(), workspace: { agent: () => ({ id: "agent", name: "Researcher", color: "ocean" }), upsertSession: vi.fn(), addAgent: vi.fn() } }));
@@ -30,6 +30,7 @@ beforeEach(() => {
   mocks.session.mockResolvedValue({ session: { id: "session", agentId: "agent" } });
   mocks.events.mockResolvedValue({ events: [], status: "idle" });
   mocks.requests.mockResolvedValue({ requests: [] });
+  mocks.files.mockResolvedValue({ files: [] });
   mocks.interrupt.mockResolvedValue({ status: "idle" });
 });
 describe("original chat agent turn lifecycle", () => {

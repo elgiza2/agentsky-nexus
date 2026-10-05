@@ -1,7 +1,7 @@
 /** Runs OpenClaw through AgentSky while preserving Megsy's original chat surface. */
 import type React from "react";
 import { agentApi, openStream, type AgentRequest, type RawEvent } from "@/lib/agentsky/client";
-import { buildTranscript, orbStateFor, type AgentTurn, type Lang } from "@/lib/agentsky/transcript";
+import { buildTranscript, orbStateFor, type AgentTurn, type Lang, type Card } from "@/lib/agentsky/transcript";
 import type { Message, ToolPart } from "../chatConstants";
 import { loadWorkspace, workspace } from "@/lib/agentsky/store";
 import { detectMediaIntent } from "@/lib/agentsky/mediaIntent";
@@ -69,6 +69,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
   let identity: Message["agentSkyAgent"];
   let failure: string | undefined;
   let stopped = false;
+  let fileCards: Card[] = [];
   const baseline = new Set<string>();
   const received = new Set<string>();
   let started = false;
@@ -79,7 +80,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
       content: turn?.text || "", agentPending: running && !turn?.text,
       agentSkyState: stopped ? "idle" : orbStateFor(turn, running),
       agentSkySteps: turn?.steps ?? [], toolParts: toToolParts(turn),
-      agentSkyCards: turn?.cards, agentSkyStopped: stopped,
+      agentSkyCards: [...(turn?.cards ?? []), ...fileCards], agentSkyStopped: stopped,
       reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n"),
     });
   };
@@ -165,6 +166,11 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
     if (controller.signal.aborted) { stopped = true; return; }
     apply(false);
     requests = (await agentApi.requests(activeSid).catch(() => ({ requests: [], sessions: [] }))).requests;
+    if (agentApi.files) {
+      const result = await agentApi.files(activeSid).catch(() => ({ files: [] }));
+      fileCards = result.files.map(file => ({ kind: "file" as const, id: `file:${file.path}`, ...file }));
+      apply(false);
+    }
     args.onRequests(requests);
     update({ agentSkyRequests: requests });
   } catch (error) {
@@ -186,7 +192,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
           kind: "agentSky", agentSkySessionId: sid, agentSkyAgent: identity,
           agentSkySteps: turn?.steps ?? [], agentSkyStopped: stopped,
           agentSkyState: failure || turn?.error ? "error" : "done",
-          agentSkyCards: turn?.cards ?? [], agentSkyRequests: requests,
+          agentSkyCards: [...(turn?.cards ?? []), ...fileCards], agentSkyRequests: requests,
           reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n"),
           toolParts: toToolParts(turn), modelLabel: mediaTurn ? "higgsfield · Hypit" : "OpenClaw · gpt-5.6-luna",
         };
