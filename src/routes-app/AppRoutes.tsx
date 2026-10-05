@@ -9,7 +9,7 @@ import {
 import { AnimatedShell } from "./AnimatedShell";
 import {
   // chat
-  ChatPage,
+
   SharedChatPage,
   SharedSitePage,
   ResearchPreviewPage,
@@ -79,6 +79,11 @@ import {
   NotFoundPage,
   SplashTestPage,
   TestAgentPage,
+  AgentChatPage,
+  AgentsPage,
+  AgentNewPage,
+  StudioPage,
+  AgentTasksPage,
 } from "./lazyPages";
 
 const toChat = <RetiredRedirect to="/chat" />;
@@ -88,10 +93,14 @@ const toPricing = <RetiredRedirect to="/pricing" />;
 export const AppRoutes = ({ currentUserId }: { currentUserId: string | null }) => (
   <>
     {/* ── Entry ──────────────────────────────────────────────── */}
-    <Route path="/" element={<ChatPage />} />
-    <Route path="/chat" element={<ChatPage />} />
+    <Route path="/" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
+    <Route path="/chat" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
+    <Route path="/chat/:sessionId" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
+    <Route path="/agents" element={<ProtectedRoute><AgentsPage /></ProtectedRoute>} />
+    <Route path="/agents/new" element={<ProtectedRoute><AgentNewPage /></ProtectedRoute>} />
+    <Route path="/studio" element={<ProtectedRoute><StudioPage /></ProtectedRoute>} />
     <Route path="/welcome" element={<WelcomePage />} />
-    <Route path="/index" element={<ChatPage />} />
+    <Route path="/index" element={<ProtectedRoute><AgentChatPage /></ProtectedRoute>} />
     <Route path="/share/:shareId" element={<SharedChatPage />} />
 
     {/* ── Auth hub — one page, animated inner views ──────────── */}
@@ -259,13 +268,14 @@ export const AppRoutes = ({ currentUserId }: { currentUserId: string | null }) =
       }
     />
     <Route
-      path="/tasks"
+      path="/tasks/life"
       element={
         <ProtectedRoute>
           <TasksPage />
         </ProtectedRoute>
       }
     />
+    <Route path="/tasks" element={<ProtectedRoute><AgentTasksPage /></ProtectedRoute>} />
     <Route path="/settings/knowledge" element={<Navigate to="/settings/memory" replace />} />
 
     <Route
