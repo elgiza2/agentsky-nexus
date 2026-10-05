@@ -1,6 +1,7 @@
 /** @doc Turns raw AgentSky session events into a clean transcript: user bubbles and agent turns
  *  made of steps (thinking, searches, clicks…), answer text and interactive cards. */
 import type { RawEvent } from "./client";
+import { safeToolDetail } from "./toolDetail";
 
 export type StepKind = "thought" | "search" | "read" | "browse" | "image" | "video" | "helper" | "command" | "edit" | "ask" | "task" | "plan" | "tool" | "python" | "code" | "file" | "memory" | "email" | "calendar" | "map" | "data";
 export type Step = {
@@ -17,6 +18,7 @@ export type MediaPayload = { type: "megsy.media"; kind: "image" | "video"; runId
 export type VideoProposal = { type: "megsy.video_proposal"; prompt: string; aspect: string; duration: number };
 
 export type Card =
+  | { kind: "file"; id: string; path: string; name: string; size: number }
   | { kind: "media"; id: string; media: MediaPayload }
   | { kind: "video"; id: string; proposal: VideoProposal }
   | { kind: "question"; id: string; question: string; options: string[]; allowFreeText: boolean; answered: boolean }

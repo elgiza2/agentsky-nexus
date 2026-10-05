@@ -51,6 +51,11 @@ async function call<T = any>(base: string, path: string, init: RequestInit = {})
 
 export const api = <T = any>(path: string, init?: RequestInit) => call<T>(API, path, init);
 export const gateway = <T = any>(path: string, init?: RequestInit) => call<T>(GATEWAY, path, init);
+export async function downloadWorkspaceFile(sessionId: string, path: string) {
+  return fetch(`${API}/sessions/${encodeURIComponent(sessionId)}/workspace/files/content?path=${encodeURIComponent(path)}`, {
+    headers: { Authorization: `Bearer ${key()}` }, redirect: "error",
+  });
+}
 
 export function streamSession(sessionId: string, signal: AbortSignal) {
   return fetch(`${API}/sessions/${encodeURIComponent(sessionId)}/stream`, {
