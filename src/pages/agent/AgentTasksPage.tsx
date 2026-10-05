@@ -53,7 +53,7 @@ export default function AgentTasksPage() {
       {!tasks && !error && <div className="flex items-center justify-center gap-3 py-16" role="status"><AgentOrb size={42} state="awakening" /><span className="text-sm text-muted-foreground">{ar ? "بنجهز المهام…" : "Loading tasks…"}</span></div>}
       <div className="space-y-3">{visible.map((task) => {
         const session = sessions.find((s) => s.id === task.id);
-        const agent = agents.find((a) => a.id === session?.agentId);
+        const agent = agents.find((a) => a.id === (task.agentId || session?.agentId));
         const state = task.attention === "working" ? "tool" : task.attention === "failed" ? "error" : task.attention === "done" ? "done" : "idle";
         return <Button variant="outline" key={task.id} disabled={opening === task.id} onClick={() => void open(task)} className="h-auto w-full justify-start gap-4 rounded-lg p-4 text-start md:p-5">
           <AgentOrb size={40} color={agent?.color} state={state} />

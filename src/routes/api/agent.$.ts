@@ -217,6 +217,7 @@ async function handle(request: Request, splat: string): Promise<Response> {
       .filter((t) => t.agent_id && ids.has(t.agent_id) && !t.archived)
       .map((t) => ({
         id: t.id,
+        agentId: t.agent_id,
         title: t.title,
         attention: t.attention,
         statusLine: t.status_line,

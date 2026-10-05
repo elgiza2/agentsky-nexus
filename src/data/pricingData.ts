@@ -220,54 +220,12 @@ export const ENTERPRISE_FEATURES: string[] = [
 ];
 
 export const SERVICES_GUIDE: { name: string; desc: string }[] = [
-  {
-    name: "Cloud Computer",
-    desc: "Megsy drives a real cloud browser and desktop — it clicks, types, fills forms, downloads files and finishes the job while you watch. Included on Pro.",
-  },
-  {
-    name: "Long-Running Tasks",
-    desc: "Hand over work that takes hours. Tasks keep running after you close the app and pick up where they stopped — up to 4 hours, with automatic recovery.",
-  },
-  {
-    name: "Background Agents",
-    desc: "Agents work in parallel on separate jobs and report back when done. Up to 3 in parallel on Pro.",
-  },
-  {
-    name: "Unlimited Chat",
-    desc: "Chat is free for everyone and never spends credits.",
-  },
-  {
-    name: "Image Generation",
-    desc: "Higgsfield image generation inside chat is exclusive to subscribers; free accounts cannot generate images.",
-  },
-  {
-    name: "Slides & Presentations",
-    desc: "Create complete, editable decks from a prompt and export to PPTX or PDF. Free plan: 3 / day.",
-  },
-  {
-    name: "Docs & Deep Research",
-    desc: "Long-form documents and multi-source research reports with citations. Free plan: 3 of each per day.",
-  },
-  {
-    name: "Megsy Coder",
-    desc: "Build full apps and websites in natural language with one-click deploy. Included on every paid plan.",
-  },
-  {
-    name: "Video Generation",
-    desc: "Higgsfield short videos render directly in chat for subscribers only. Free accounts cannot generate videos.",
-  },
-  {
-    name: "Megsy OS",
-    desc: "Your autonomous 24/7 agent. Runs tasks, monitors projects and executes multi-step work in the background.",
-  },
-  {
-    name: "Megsy Credits (MC)",
-    desc: "Chat remains available on the free plan. Agent switching and media generation require an active subscription. Included credit balances refresh with the subscription.",
-  },
-  {
-    name: "Team Workspace",
-    desc: "Shared projects, files and chats for your team — included on Pro.",
-  },
+  { name: "Megsy", desc: "OpenClaw handles chat, web research, browsing, coding and Python through AgentSky." },
+  { name: "Helper agents", desc: "Multi-step work can be split across helper agents with live progress in chat." },
+  { name: "Agent catalogue", desc: "Browse available agents. Switching agents requires an active subscription." },
+  { name: "Higgsfield Images & Video", desc: "Subscriber-only media inside chat using the configured Hypit agent. Free accounts cannot generate images or videos. Availability depends on the provider." },
+  { name: "Task progress", desc: "Follow the agent's actual work, tool activity and completion status." },
+  { name: "Megsy Credits", desc: "Pro includes 1,000 monthly credits. Chat remains available on the free plan; media and agent switching require a subscription." },
 ];
 
 export const FAQS: { q: string; a: string }[] = [
