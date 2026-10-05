@@ -79,8 +79,7 @@ Then smoke the routes (`/`, `/pricing`, `/chat`, `/settings`, `/usage`,
 See `roadmap.md`.
 
 ## 7. Restructure rules (Sep 2026)
-- Do not redeploy legacy `anything-api`; use the active TanStack server paths and AgentSky integration instead.
-- Phone alarms use the `MegsyAndroid` bridge; background reminders use the documented FCM scheduler.
-- Agent tool details stay collapsed, bounded and redacted; active tools override reasoning for presence.
-- Downloadable chat files come only from owned AgentSky session workspace endpoints; never invent artifact payloads.
-- Shared AgentIdentity branding covers chat, agents and auth; motion respects reduced-motion settings.
+- New edge functions can't be created from this project; the agent (`kind: "agent"`) and the fixed image model (`kind: "image"`) live inside `media-video`. Why: it is the only function whose deployed code matches the repo.
+- Do not redeploy `anything-api` from this repo: its deployed version has modules missing here. Why: redeploying would break live features.
+- Agent creates tasks/goals by ending replies with [[TASK|ALARM|GOAL: title | local time]]; ComputerTaskCard saves them via src/lib/life/agentActions.ts. Why: the agent runs on Browser Use and cannot write to our DB.
+- Phone alarms/reminders go through the `MegsyAndroid` WebView bridge (src/lib/native/bridge.ts, docs/android-bridge.md); background push + morning plan via pg_cron → /api/public/reminders-tick (FCM connector, key in public.cron_secrets). Why: the Android app wraps the site, so web push doesn't work inside it.

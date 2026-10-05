@@ -5,7 +5,6 @@ import { useWorkspaceStore } from "@/lib/agentsky/store";
 import type { Message } from "../chatConstants";
 import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
 import { ApprovalCard, MediaCard, PlanCard, QuestionCard, TaskCard, VideoProposalCard } from "@/components/agent/Cards";
-import { AgentFileCard } from "@/components/agent/AgentFileCard";
 
 const toolState = (state: "running" | "done" | "error") =>
   state === "running" ? "input-available" as const : state === "error" ? "output-error" as const : "output-available" as const;
@@ -30,7 +29,6 @@ export default function AgentSkyBlocks({ message, onSend }: { message: Message; 
         </Tool>
       ))}
       {cards.map((card) => {
-        if (card.kind === "file" && message.agentSkySessionId) return <AgentFileCard key={card.id} sessionId={message.agentSkySessionId} file={card} lang={lang} />;
         if (card.kind === "media") return <MediaCard key={card.id} media={card.media} lang={lang} />;
         if (card.kind === "video") return <VideoProposalCard key={card.id} proposal={card.proposal} models={workspace.models} tier={workspace.tier} lang={lang} onUpgrade={() => navigate("/pricing")} />;
         if (card.kind === "question") return <QuestionCard key={card.id} question={card.question} options={card.options} allowFreeText={card.allowFreeText} answered={card.answered} lang={lang} onAnswer={onSend} />;

@@ -13,7 +13,6 @@ import {
   resolveUserAgent,
   publicOrigin,
   streamSession,
-  downloadWorkspaceFile,
 } from "@/lib/agentsky/agentsky.server";
 import {
   pickModel,
@@ -50,7 +49,6 @@ function agentView(a: any) {
     prompt: a.metadata?.userPrompt || "",
     isDefault: String(a.name).endsWith("_default"),
     createdAt: a.createdAt,
-    mediaOnly: a.metadata?.kind === "media",
   };
 }
 
@@ -66,9 +64,7 @@ async function fullAgents(userId: string, origin: string) {
     description: a.llm || "", color: ["ocean", "mint", "rose", "ember"][index % 4],
     prompt: "", isDefault: false, isTemplate: true, createdAt: a.createdAt,
   }));
-  const owned = details.filter((a) => !a.metadata?.templateId || a.metadata?.kind === "media").map(agentView);
-  if (!owned.some(a => a.mediaOnly)) owned.push({ id: "higgsfield", name: "higgsfield", description: "صور وفيديو · Hypit", color: "sun", prompt: "", isDefault: false, createdAt: "", mediaOnly: true, available: templates.some(a => /hypit/i.test(`${a.name} ${a.agentType}`)) } as any);
-  return [...owned, ...catalogue.filter(a => !/hypit/i.test(a.name))].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+  return [...details.filter((a) => !a.metadata?.templateId || a.metadata?.kind === "media").map(agentView), ...catalogue].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 }
 
 async function handle(request: Request, splat: string): Promise<Response> {
@@ -162,31 +158,6 @@ async function handle(request: Request, splat: string): Promise<Response> {
     }
     if (!sid) return j({ error: { code: "not_found", message: "Not found" } }, 404);
     const session = await getOwnedSession(uid, sid);
-
-    if (parts[2] === "files" && method === "GET") {
-      const files: { path: string; name: string; size: number }[] = [];
-      let directories = 0;
-      const scan = async (path: string, depth: number): Promise<void> => {
-        if (++directories > 20) return;
-        const result = await api<{ entries: { name: string; type: string; size: number }[] }>(`/sessions/${encodeURIComponent(sid)}/workspace/files?path=${encodeURIComponent(path)}`);
-        for (const entry of result.entries ?? []) {
-          if (files.length >= 100) break;
-          if (/^(node_modules|vendor|dist|\.git)$/.test(entry.name)) continue;
-          const filePath = path ? `${path}/${entry.name}` : entry.name;
-          if (entry.type === "file") files.push({ path: filePath, name: entry.name, size: entry.size });
-          else if (entry.type === "directory" && depth < 2) await scan(filePath, depth + 1).catch(() => undefined);
-        }
-      };
-      await scan("", 0);
-      return j({ files });
-    }
-    if (parts[2] === "file" && method === "GET") {
-      const path = new URL(request.url).searchParams.get("path") || "";
-      if (!path || path.length > 1024 || path.includes("\\") || path.split("/").some(p => p === ".." || p.startsWith(".")) || path.startsWith("/")) return j({ error: { code: "invalid_path", message: "Invalid file path" } }, 400);
-      const upstream = await downloadWorkspaceFile(sid, path);
-      if (!upstream.ok) return j(await upstream.json().catch(() => ({ error: { message: "تعذّر تنزيل الملف؛ ممكن مساحة العمل تكون نايمة أو الملف أكبر من الحد المتاح." } })), upstream.status);
-      return new Response(upstream.body, { headers: { "Content-Type": "application/octet-stream", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(path.split("/").pop() || "download")}`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
-    }
 
     if (!parts[2] && method === "GET") return j({ session: { id: session.id, agentId: session.agentId, title: session.title, status: session.status } });
     if (!parts[2] && method === "PATCH") {

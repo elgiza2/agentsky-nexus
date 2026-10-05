@@ -1,7 +1,6 @@
 /** @doc Turns raw AgentSky session events into a clean transcript: user bubbles and agent turns
  *  made of steps (thinking, searches, clicks…), answer text and interactive cards. */
 import type { RawEvent } from "./client";
-import { safeToolDetail } from "./toolDetail";
 
 export type StepKind = "thought" | "search" | "read" | "browse" | "image" | "video" | "helper" | "command" | "edit" | "ask" | "task" | "plan" | "tool" | "python" | "code" | "file" | "memory" | "email" | "calendar" | "map" | "data";
 export type Step = {
@@ -9,8 +8,6 @@ export type Step = {
   kind: StepKind;
   label: string;
   detail?: string;
-  input?: string;
-  output?: string;
   status: "active" | "done" | "error";
 };
 
@@ -18,7 +15,6 @@ export type MediaPayload = { type: "megsy.media"; kind: "image" | "video"; runId
 export type VideoProposal = { type: "megsy.video_proposal"; prompt: string; aspect: string; duration: number };
 
 export type Card =
-  | { kind: "file"; id: string; path: string; name: string; size: number }
   | { kind: "media"; id: string; media: MediaPayload }
   | { kind: "video"; id: string; proposal: VideoProposal }
   | { kind: "question"; id: string; question: string; options: string[]; allowFreeText: boolean; answered: boolean }
@@ -340,7 +336,7 @@ export function buildTranscript(events: RawEvent[], lang: Lang, running: boolean
         const t = agent();
         for (const s of t.steps) if (s.kind === "thought" && s.status === "active") s.status = "done";
         const d = describeTool(f.name, f.args, lang);
-        const s: Step = { id: f.id, kind: d.kind, label: d.label, input: safeToolDetail(f.args), status: "active" };
+        const s: Step = { id: f.id, kind: d.kind, label: d.label, status: "active" };
         callSteps.set(f.callId, s);
         t.steps.push(s);
         const n = base(f.name);
@@ -366,7 +362,7 @@ export function buildTranscript(events: RawEvent[], lang: Lang, running: boolean
       case "result": {
         const t = agent();
         const s = callSteps.get(f.callId);
-        if (s) { s.status = f.ok ? "done" : "error"; s.output = safeToolDetail(f.result); }
+        if (s) s.status = f.ok ? "done" : "error";
         const p = payloadOf(f.result);
         if (p?.type === "megsy.media") t.cards.push({ kind: "media", id: f.callId, media: p });
         if (p?.type === "megsy.video_proposal") t.cards.push({ kind: "video", id: f.callId, proposal: p });
@@ -396,9 +392,7 @@ export function orbStateFor(turn: AgentTurn | undefined, running: boolean): "idl
   if (!turn) return running ? "thinking" : "idle";
   if (turn.error) return "error";
   if (!running) return "done";
-   const working = turn.steps.some((s) => s.status === "active" && s.kind !== "thought");
-   if (working) return "tool";
-   const active = [...turn.steps].reverse().find((s) => s.status === "active");
+  const active = [...turn.steps].reverse().find((s) => s.status === "active");
   if (active) return active.kind === "thought" ? "thinking" : "tool";
   return turn.text ? "talking" : "thinking";
 }

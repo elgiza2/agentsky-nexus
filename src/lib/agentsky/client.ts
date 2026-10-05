@@ -12,8 +12,6 @@ export type AgentInfo = {
   prompt: string;
   isDefault: boolean;
   isTemplate?: boolean;
-  mediaOnly?: boolean;
-  available?: boolean;
   createdAt: string;
 };
 
@@ -63,7 +61,6 @@ export const agentApi = {
   renameSession: (id: string, title: string) => req("sessions/" + id, { method: "PATCH", body: JSON.stringify({ title }) }),
   deleteSession: (id: string) => req("sessions/" + id, { method: "DELETE" }),
   events: (id: string) => req<{ events: RawEvent[]; status: string }>(`sessions/${id}/events`),
-  files: (id: string) => req<{ files: { path: string; name: string; size: number }[] }>(`sessions/${encodeURIComponent(id)}/files`),
   send: (id: string, text: string, images?: string[]) =>
     req(`sessions/${id}/messages`, { method: "POST", body: JSON.stringify({ text, images }) }),
   interrupt: (id: string) => req<{ status: string }>(`sessions/${id}/interrupt`, { method: "POST", body: "{}" }),
@@ -80,17 +77,6 @@ export const agentApi = {
 export async function mediaStatus(runId: string, token: string) {
   const r = await fetch(`/api/public/media-status/${encodeURIComponent(runId)}?t=${encodeURIComponent(token)}`);
   return (await r.json()) as { status: string; urls: string[]; error?: string };
-}
-
-export async function downloadAgentFile(sessionId: string, path: string, name: string) {
-  const response = await authenticatedFetch(`/api/agent/sessions/${encodeURIComponent(sessionId)}/file?path=${encodeURIComponent(path)}`);
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.error?.message || "Could not download file");
-  }
-  const url = URL.createObjectURL(await response.blob());
-  const link = document.createElement("a"); link.href = url; link.download = name; link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ---------------- events ---------------- */

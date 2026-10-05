@@ -7,7 +7,6 @@ import { agentApi, type AgentColor } from "@/lib/agentsky/client";
 import { useWorkspaceStore, workspace } from "@/lib/agentsky/store";
 import { AgentShell } from "@/components/agent/AgentShell";
 import { AgentOrb, type OrbState } from "@/components/agent/AgentOrb";
-import { AgentIdentity } from "@/components/agent/AgentIdentity";
 
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/common/SEOHead";
@@ -39,17 +38,17 @@ export function AgentsPage() {
               const active = sessions.filter((s) => s.agentId === a.id && s.status === "running").length;
               const locked = !a.isDefault && tier !== "pro";
               return <li key={a.id} className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-muted/40" data-agent-color={a.color}>
-                <AgentIdentity name={a.name} size={44} color={a.color} state={active ? "tool" : "idle"} />
+                <AgentOrb size={44} color={a.color} state={active ? "tool" : "idle"} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2"><h2 className="truncate font-medium">{a.name}</h2>{a.isDefault && <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{ar ? "الأساسي" : "Default"}</span>}{active > 0 && <span className="text-[11px] text-primary">{ar ? `${active} شغالة` : `${active} running`}</span>}</div>
-                  <p className="truncate text-sm text-muted-foreground">{a.mediaOnly ? (ar ? "للصور والفيديو فقط" : "Images & video only") : a.description || (ar ? "وكيل عام" : "General agent")}</p>
+                  <p className="truncate text-sm text-muted-foreground">{a.description || (ar ? "وكيل عام" : "General agent")}</p>
                 </div>
-                {!a.isDefault && !a.isTemplate && !a.mediaOnly && <Button variant="ghost" size="icon-sm" title={ar ? "حذف" : "Delete"} aria-label={ar ? "حذف الوكيل" : "Delete agent"} disabled={deleting === a.id} onClick={async () => {
+                {!a.isDefault && !a.isTemplate && <Button variant="ghost" size="icon-sm" title={ar ? "حذف" : "Delete"} aria-label={ar ? "حذف الوكيل" : "Delete agent"} disabled={deleting === a.id} onClick={async () => {
                   if (!confirm(ar ? "تحذف الوكيل ده؟" : "Delete this agent?")) return;
                   setDeleting(a.id); setDeleteError(null);
                   try { await agentApi.deleteAgent(a.id); workspace.removeAgent(a.id); } catch (e) { setDeleteError(e instanceof Error ? e.message : "Could not delete agent"); } finally { setDeleting(null); }
                 }}><Trash2 /></Button>}
-                {a.mediaOnly ? <span className="shrink-0 text-xs text-muted-foreground">{a.available === false ? (ar ? "غير متاح حاليًا" : "Unavailable") : (ar ? "داخل الشات" : "In chat")}</span> : <Button variant={locked ? "ghost" : "neutral"} size="sm" onClick={() => nav(locked ? "/pricing" : `/chat?agent=${encodeURIComponent(a.id)}`)}>{locked ? <><Lock />{ar ? "للمشتركين" : "Pro"}</> : <>{ar ? "شات" : "Chat"}<ArrowUpRight className="rtl:-scale-x-100" /></>}</Button>}
+                <Button variant={locked ? "ghost" : "neutral"} size="sm" onClick={() => nav(locked ? "/pricing" : `/chat?agent=${encodeURIComponent(a.id)}`)}>{locked ? <><Lock />{ar ? "للمشتركين" : "Pro"}</> : <>{ar ? "شات" : "Chat"}<ArrowUpRight className="rtl:-scale-x-100" /></>}</Button>
               </li>;
             })}
           </ul>

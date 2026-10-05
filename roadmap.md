@@ -1,12 +1,5 @@
 # Megsy — roadmap
 
-## Tools, deliverables and agent identity (October 5, 18:50 Cairo)
-- [x] Expand actual tool inputs/results and prioritize working state during tool execution.
-- [x] Render and persist real generated file attachments with secure downloads.
-- [x] Show branded agent characters on unified auth with phone tilt and reduced-motion support.
-- [x] Add provider head logos throughout agent identity; list media-only Higgsfield without generic chat selection.
-- [ ] Verify tools, file results and auth characters visually and with regression tests.
-
 ## Fixed in the QA pass
 - Computer tasks: terminal state (done/failed + result text) is written only after the
   external environment confirms it (`src/lib/computer/client.ts`, `persistTerminalState`).

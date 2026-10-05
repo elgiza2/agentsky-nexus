@@ -7,7 +7,6 @@ import {
 import type { Step, StepKind } from "@/lib/agentsky/transcript";
 import { Button } from "@/components/ui/button";
 import { AgentOrb } from "./AgentOrb";
-import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
 
 const ICONS: Record<StepKind, any> = {
   thought: Brain, search: Search, read: FileText, browse: MousePointerClick, image: ImageIcon, video: Film,
@@ -15,25 +14,14 @@ const ICONS: Record<StepKind, any> = {
   python: FileCode, code: Code2, file: FolderOpen, memory: BookMarked, email: Mail, calendar: CalendarDays, map: MapPin, data: BarChart3,
 };
 
-function StepRow({ step, lang }: { step: Step; lang: "en" | "ar" }) {
+function StepRow({ step }: { step: Step }) {
   const [open, setOpen] = useState(false);
   const Icon = step.status === "error" ? X : ICONS[step.kind];
   const expandable = step.kind === "thought" && !!step.detail?.trim();
-  if (step.kind !== "thought") return <div className="ag-step ag-fade-in" data-status={step.status} data-kind={step.kind}>
-    <span className="ag-step__icon"><Icon size={12} strokeWidth={2.4} /></span>
-    <Tool defaultOpen={false} className="ag-tool min-w-0 flex-1 border-0 bg-transparent shadow-none">
-      <ToolHeader type="dynamic-tool" toolName={step.kind} title={step.label} state={step.status === "active" ? "input-available" : step.status === "error" ? "output-error" : "output-available"} className="ag-tool__header" />
-      <ToolContent className="ag-tool__content">
-        <div className="ag-tool__status">{lang === "ar" ? (step.status === "active" ? "بيشتغل دلوقتي…" : step.status === "error" ? "الخطوة وقفت" : "الخطوة خلصت") : (step.status === "active" ? "Working now…" : step.status === "error" ? "Step failed" : "Step completed")}</div>
-        {step.input && <div><h4>{lang === "ar" ? "المدخلات" : "Input"}</h4><pre dir="ltr">{step.input}</pre></div>}
-        {step.output && <div><h4>{lang === "ar" ? "النتيجة" : "Result"}</h4><pre dir="ltr">{step.output}</pre></div>}
-      </ToolContent>
-    </Tool>
-  </div>;
   return (
     <div className="ag-step ag-fade-in" data-status={step.status} data-kind={step.kind}>
       <span className="ag-step__icon">
-        <Icon size={12} strokeWidth={2.4} />
+        {step.kind === "helper" ? <AgentOrb size={20} color="mint" state={step.status === "active" ? "tool" : step.status === "error" ? "error" : "done"} /> : <Icon size={12} strokeWidth={2.4} />}
       </span>
       <div className="min-w-0 flex-1">
         <Button variant="ghost"
@@ -65,7 +53,7 @@ export function StepTimeline({ steps, lang }: { steps: Step[]; lang: "en" | "ar"
         </Button>
       )}
       {visible.map((s) => (
-        <StepRow key={s.id} step={s} lang={lang} />
+        <StepRow key={s.id} step={s} />
       ))}
     </div>
   );

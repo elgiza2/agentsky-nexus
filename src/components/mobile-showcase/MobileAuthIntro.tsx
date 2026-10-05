@@ -1,6 +1,6 @@
 /** Shared welcome/sign-in screen, matching the quiet Cue reference with Megsy's character. */
 import { ArrowLeft, Eye, EyeOff, Mail } from "lucide-react";
-import { AgentConstellation } from "@/components/auth/AgentConstellation";
+import { AgentOrb } from "@/components/agent/AgentOrb";
 import AppleSignInButton from "@/components/auth/AppleSignInButton";
 import { useUserLang } from "@/lib/authI18n";
 
@@ -15,7 +15,7 @@ export default function MobileAuthIntro(p: Props) {
   const label = (provider: string) => ar ? `متابعة باستخدام ${provider}` : `Continue with ${provider}`;
   return <main className="megsy-auth-screen" dir={ar ? "rtl" : "ltr"}>
     {p.expanded && <button type="button" className="megsy-auth-back" onClick={p.onBack} aria-label={ar ? "رجوع" : "Back"}><ArrowLeft size={20} /></button>}
-    <div className="megsy-auth-brand"><div className="megsy-auth-lockup"><AgentConstellation /><h1>Megsy</h1></div></div>
+    <div className="megsy-auth-brand"><div className="megsy-auth-lockup"><AgentOrb color="aurora" state="idle" size={86} /><h1>Megsy</h1></div></div>
     <section className="megsy-auth-actions">
       {p.error && <p role="alert" className="megsy-auth-error">{p.error}</p>}
       {!p.expanded ? <>
