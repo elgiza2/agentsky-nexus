@@ -1,12 +1,15 @@
 /** @doc Agents list + full-page agent builder (/agents and /agents/new). */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, Loader2, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, Loader2, ArrowLeft, ArrowUpRight, Search } from "lucide-react";
 import { useUserLang } from "@/lib/authI18n";
 import { agentApi, type AgentColor } from "@/lib/agentsky/client";
 import { useWorkspaceStore, workspace } from "@/lib/agentsky/store";
 import { AgentShell } from "@/components/agent/AgentShell";
 import { AgentOrb, type OrbState } from "@/components/agent/AgentOrb";
+
+import { Button } from "@/components/ui/button";
+import SEOHead from "@/components/common/SEOHead";
 
 const COLORS: AgentColor[] = ["aurora", "ocean", "ember", "mint", "sun", "rose", "mono"];
 
@@ -14,48 +17,38 @@ export function AgentsPage() {
   const lang = useUserLang() === "ar-eg" ? "ar" : "en";
   const ar = lang === "ar";
   const nav = useNavigate();
-  const { agents, ready } = useWorkspaceStore();
+  const { agents, ready, error, sessions } = useWorkspaceStore();
+  const [query, setQuery] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const filtered = agents.filter((a) => `${a.name} ${a.description}`.toLowerCase().includes(query.toLowerCase()));
   return (
-    <AgentShell
-      lang={lang}
-      title={ar ? "الوكلاء" : "Agents"}
-      actions={
-        <button type="button" className="ag-btn ag-btn--primary !h-9" onClick={() => nav("/agents/new")}>
-          <Plus size={16} /> {ar ? "وكيل جديد" : "New agent"}
-        </button>
-      }
-    >
-      <div className="ag-scroll">
-        <div className="ag-column grid gap-3 sm:grid-cols-2">
-          {!ready && <Loader2 className="animate-spin" />}
-          {agents.map((a) => (
-            <div key={a.id} className="ag-card flex flex-col gap-3 p-4" data-agent-color={a.color}>
-              <div className="flex items-center gap-3">
-                <AgentOrb size={44} color={a.color} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-semibold">{a.name}</div>
-                  <div className="line-clamp-2 text-[13px] text-[color:var(--ag-muted)]">{a.description || (ar ? "وكيل عام" : "General agent")}</div>
-                </div>
-                {!a.isDefault && (
-                  <button
-                    type="button"
-                    className="ag-icon-btn text-[color:var(--ag-muted)]"
-                    aria-label={ar ? "حذف" : "Delete"}
-                    onClick={async () => {
-                      if (!confirm(ar ? "تحذف الوكيل ده؟" : "Delete this agent?")) return;
-                      workspace.removeAgent(a.id);
-                      await agentApi.deleteAgent(a.id).catch(() => {});
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
-              <button type="button" className="ag-btn ag-btn--agent" onClick={() => nav(`/chat?agent=${a.id}`)}>
-                {ar ? "ابدأ شات" : "Start chat"}
-              </button>
-            </div>
-          ))}
+    <AgentShell lang={lang} title={ar ? "الوكلاء" : "Agents"} actions={<Button variant="neutral" size="sm" onClick={() => nav("/agents/new")}><Plus />{ar ? "وكيل جديد" : "New agent"}</Button>}>
+      <SEOHead title="Agents — Megsy AI" description="Your Megsy agents and their conversations." />
+      <div className="flex-1 overflow-y-auto px-5 py-8 md:px-10 md:py-12">
+        <div className="mx-auto w-full max-w-5xl">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
+            <div><h1 className="text-3xl font-semibold">{ar ? "وكلاؤك" : "Your agents"}</h1><p className="mt-2 text-sm text-muted-foreground">{agents.length} {ar ? "وكيل" : "agents"} · {sessions.filter((s) => s.status === "running").length} {ar ? "شغال دلوقتي" : "working now"}</p></div>
+            <label className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 sm:w-60"><Search className="h-4 w-4 text-muted-foreground" /><input aria-label={ar ? "ابحث عن وكيل" : "Search agents"} placeholder={ar ? "ابحث عن وكيل" : "Search agents"} value={query} onChange={(e) => setQuery(e.target.value)} className="min-w-0 w-full bg-transparent text-sm outline-none" /></label>
+          </div>
+          {(error || deleteError) && <p role="alert" className="mb-5 text-sm text-destructive">{error || deleteError}</p>}
+          {!ready && <div className="flex items-center gap-3 py-12" role="status"><AgentOrb size={40} state="awakening" /><span className="text-sm text-muted-foreground">{ar ? "بنجهز وكلاءك…" : "Loading your agents…"}</span></div>}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((a) => {
+              const active = sessions.filter((s) => s.agentId === a.id && s.status === "running").length;
+              return <article key={a.id} className="group flex min-h-64 flex-col rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/30" data-agent-color={a.color}>
+                <div className="mb-6 flex items-start justify-between gap-3"><AgentOrb size={58} color={a.color} state={active ? "tool" : "idle"} />{a.isDefault ? <span className="text-xs text-muted-foreground">{ar ? "الأساسي" : "Default"}</span> : <Button variant="ghost" size="icon-sm" title={ar ? "حذف الوكيل" : "Delete agent"} aria-label={ar ? "حذف الوكيل" : "Delete agent"} disabled={deleting === a.id} onClick={async () => {
+                  if (!confirm(ar ? "تحذف الوكيل ده؟" : "Delete this agent?")) return;
+                  setDeleting(a.id); setDeleteError(null);
+                  try { await agentApi.deleteAgent(a.id); workspace.removeAgent(a.id); } catch (e) { setDeleteError(e instanceof Error ? e.message : "Could not delete agent"); } finally { setDeleting(null); }
+                }}><Trash2 /></Button>}</div>
+                <h2 className="break-words text-lg font-semibold">{a.name}</h2>
+                <p className="mt-2 mb-6 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.description || (ar ? "وكيل عام" : "General agent")}</p>
+                <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4"><span className="text-xs text-muted-foreground">{active ? (ar ? `${active} مهمة شغالة` : `${active} active tasks`) : (ar ? "جاهز" : "Ready")}</span><Button variant="ghost" size="sm" onClick={() => nav(`/chat?agent=${encodeURIComponent(a.id)}`)}>{ar ? "ابدأ شات" : "Start chat"}<ArrowUpRight className="rtl:-scale-x-100" /></Button></div>
+              </article>;
+            })}
+          </div>
+          {ready && !filtered.length && !error && <div className="py-16 text-center text-muted-foreground">{ar ? "مفيش وكلاء بالاسم ده" : "No matching agents"}</div>}
         </div>
       </div>
     </AgentShell>
@@ -95,25 +88,26 @@ export function AgentNewPage() {
     <AgentShell
       lang={lang}
       title={
-        <button type="button" className="flex items-center gap-2" onClick={() => nav("/agents")}>
+        <Button variant="ghost" type="button" className="flex items-center gap-2" onClick={() => nav("/agents")}>
           <ArrowLeft size={17} className="rtl:rotate-180" /> {ar ? "وكيل جديد" : "New agent"}
-        </button>
+        </Button>
       }
     >
+      <SEOHead title="New Agent — Megsy AI" description="Create a personal Megsy agent." />
       <div className="ag-scroll" data-agent-color={color}>
-        <div className="ag-column grid gap-8 md:grid-cols-[1fr_220px]">
+        <div className="mx-auto grid w-full max-w-4xl gap-8 px-5 py-10 md:grid-cols-[1fr_220px] md:px-10">
           <div className="space-y-5">
             <div className="ag-field">
-              <label>{ar ? "الاسم" : "Name"}</label>
-              <input className="ag-input" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} placeholder={ar ? "مثلاً: باحث السفر" : "e.g. Travel researcher"} />
+              <label htmlFor="agent-name">{ar ? "الاسم" : "Name"}</label>
+              <input id="agent-name" className="ag-input" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} placeholder={ar ? "مثلاً: باحث السفر" : "e.g. Travel researcher"} />
             </div>
             <div className="ag-field">
-              <label>{ar ? "بيعمل إيه" : "What it does"}</label>
-              <input className="ag-input" value={description} maxLength={140} onChange={(e) => setDescription(e.target.value)} placeholder={ar ? "جملة قصيرة" : "One short line"} />
+              <label htmlFor="agent-description">{ar ? "بيعمل إيه" : "What it does"}</label>
+              <input id="agent-description" className="ag-input" value={description} maxLength={140} onChange={(e) => setDescription(e.target.value)} placeholder={ar ? "جملة قصيرة" : "One short line"} />
             </div>
             <div className="ag-field">
-              <label>{ar ? "التعليمات" : "Instructions"}</label>
-              <textarea
+              <label htmlFor="agent-prompt">{ar ? "التعليمات" : "Instructions"}</label>
+              <textarea id="agent-prompt"
                 className="ag-input min-h-[200px] resize-y leading-relaxed"
                 value={prompt}
                 maxLength={6000}
@@ -122,21 +116,21 @@ export function AgentNewPage() {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={ar ? "اشرح له يشتغل إزاي، بيتكلم بأي أسلوب، وإيه اللي يتجنبه." : "Tell it how to work, how to talk, and what to avoid."}
               />
-              <span className="ag-hint">{ar ? "يقدر دايماً يبحث، يتصفح، يعمل صور وفيديو، ويشغل مساعدين." : "It can always search, browse, make images and video, and run helper agents."}</span>
+              
             </div>
             <div className="ag-field">
               <label>{ar ? "اللون" : "Color"}</label>
               <div className="flex flex-wrap gap-3">
                 {COLORS.map((c) => (
-                  <button key={c} type="button" data-agent-color={c} data-selected={c === color} className="ag-swatch ag-gradient" aria-label={c} onClick={() => setColor(c)} />
+                  <Button variant="ghost" key={c} type="button" data-agent-color={c} data-selected={c === color} aria-pressed={c === color} className="ag-swatch ag-gradient p-0" aria-label={c} onClick={() => setColor(c)} />
                 ))}
               </div>
             </div>
             {error && <p className="text-[13px] text-[color:var(--ag-danger)]">{error}</p>}
-            <button type="button" className="ag-btn ag-btn--agent w-full" disabled={busy || name.trim().length < 2} onClick={save}>
+            <Button variant="ghost" type="button" className="ag-btn ag-btn--agent w-full" disabled={busy || name.trim().length < 2} onClick={save}>
               {busy && <Loader2 size={16} className="animate-spin" />}
               {ar ? "اعمل الوكيل" : "Create agent"}
-            </button>
+            </Button>
           </div>
           <div className="order-first flex flex-col items-center gap-3 md:order-none md:pt-6">
             <AgentOrb size={120} color={color} state={preview} />
