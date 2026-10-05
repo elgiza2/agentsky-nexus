@@ -28,6 +28,7 @@ import { Route as ApiWebSearchRouteImport } from './routes/api/web-search'
 import { Route as ApiPublicFxRouteImport } from './routes/api/public/fx'
 import { Route as ApiPublicGeoRouteImport } from './routes/api/public/geo'
 import { Route as ApiPublicRemindersTickRouteImport } from './routes/api/public/reminders-tick'
+import { Route as ApiPublicAgentToolsTokenRouteImport } from './routes/api/public/agent-tools.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -124,6 +125,12 @@ const ApiPublicRemindersTickRoute = ApiPublicRemindersTickRouteImport.update({
   path: '/api/public/reminders-tick',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAgentToolsTokenRoute =
+  ApiPublicAgentToolsTokenRouteImport.update({
+    id: '/api/public/agent-tools/$token',
+    path: '/api/public/agent-tools/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/api/public/fx': typeof ApiPublicFxRoute
   '/api/public/geo': typeof ApiPublicGeoRoute
   '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,6 +174,7 @@ export interface FileRoutesByTo {
   '/api/public/fx': typeof ApiPublicFxRoute
   '/api/public/geo': typeof ApiPublicGeoRoute
   '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -188,6 +197,7 @@ export interface FileRoutesById {
   '/api/public/fx': typeof ApiPublicFxRoute
   '/api/public/geo': typeof ApiPublicGeoRoute
   '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/api/public/fx'
     | '/api/public/geo'
     | '/api/public/reminders-tick'
+    | '/api/public/agent-tools/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/api/public/fx'
     | '/api/public/geo'
     | '/api/public/reminders-tick'
+    | '/api/public/agent-tools/$token'
   id:
     | '__root__'
     | '/'
@@ -253,6 +265,7 @@ export interface FileRouteTypes {
     | '/api/public/fx'
     | '/api/public/geo'
     | '/api/public/reminders-tick'
+    | '/api/public/agent-tools/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,6 +288,7 @@ export interface RootRouteChildren {
   ApiPublicFxRoute: typeof ApiPublicFxRoute
   ApiPublicGeoRoute: typeof ApiPublicGeoRoute
   ApiPublicRemindersTickRoute: typeof ApiPublicRemindersTickRoute
+  ApiPublicAgentToolsTokenRoute: typeof ApiPublicAgentToolsTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRemindersTickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/agent-tools/$token': {
+      id: '/api/public/agent-tools/$token'
+      path: '/api/public/agent-tools/$token'
+      fullPath: '/api/public/agent-tools/$token'
+      preLoaderRoute: typeof ApiPublicAgentToolsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -435,6 +456,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicFxRoute: ApiPublicFxRoute,
   ApiPublicGeoRoute: ApiPublicGeoRoute,
   ApiPublicRemindersTickRoute: ApiPublicRemindersTickRoute,
+  ApiPublicAgentToolsTokenRoute: ApiPublicAgentToolsTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
