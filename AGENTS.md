@@ -58,6 +58,9 @@ Consequences:
 
 ## 4. Front-end rules
 
+- Agent pages reuse AppSidebar, and AgentSky turns render inside the original ChatPage; per-message agent identity and steps persist in metadata. Why: one navigation and transcript prevents detached agent workspaces.
+- AgentSky turn subscriptions stop on fresh session.status_idle/session.error events, not transport closure; baseline event IDs prevent historical replay ending new turns. Why: the provider's standing SSE socket may stay open after completion.
+
 - Light chat follows `loving-bonds-app`; empty desktop chat is cinematic and isolated from mobile.
 - Localize English and Egyptian Arabic (`ar-eg`) through `useUserLang()`.
 - Snapshots use `#snapshot-preview`; never write into `#root` before hydration.
