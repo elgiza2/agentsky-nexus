@@ -15,7 +15,7 @@ import { registerRoute } from "@/lib/routePrefetch";
 
 // -- Top-level app routes --------------------------------------------------
 registerRoute(/^\/auth(\/|$)/, () => import("@/pages/auth/AuthPage"));
-registerRoute(/^\/chat(\/|$)/, () => import("@/pages/chat/ChatPage"));
+registerRoute(/^\/chat(\/|$)/, () => import("@/pages/agent/AgentChatPage"));
 
 // -- Settings --------------------------------------------------------------
 registerRoute(/^\/settings(\/|$)/, () => import("@/pages/settings/SettingsPage"));

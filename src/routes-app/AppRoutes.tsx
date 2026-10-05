@@ -78,7 +78,6 @@ import {
   RestorePurchasePage,
   NotFoundPage,
   SplashTestPage,
-  TestAgentPage,
   AgentChatPage,
   AgentsPage,
   AgentNewPage,
@@ -476,7 +475,6 @@ export const AppRoutes = ({ currentUserId }: { currentUserId: string | null }) =
     <Route path="/showcase" element={toChat} />
     <Route path="/test" element={<SplashTestPage />} />
     {/* Hidden internal agent sandbox — not linked anywhere. */}
-    <Route path="/test-agent" element={<TestAgentPage />} />
     <Route path="/testr" element={<ReferralPartnerTestPage />} />
     <Route path="/code" element={toChat} />
     <Route path="/build" element={toChat} />

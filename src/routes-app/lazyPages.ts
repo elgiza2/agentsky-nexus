@@ -13,7 +13,6 @@ export const Analytics = lazy(() => import("@vercel/analytics/react").then((m) =
 export const SpeedInsights = lazy(() => import("@vercel/speed-insights/react").then((m) => ({ default: m.SpeedInsights })));
 
 /* ── Chat ─────────────────────────────────────────────────────── */
-export const ChatPage = lazy(() => import("@/pages/chat/ChatPage"));
 export const SharedChatPage = lazy(() => import("@/pages/chat/SharedChatPage"));
 export const SharedSitePage = lazy(() => import("@/pages/SharedSitePage"));
 export const ResearchPreviewPage = lazy(() => import("@/pages/chat/ResearchPreviewPage"));
@@ -80,7 +79,6 @@ export const RestorePurchasePage = lazy(() => import("@/pages/legal/RestorePurch
 export const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 export const OnboardingPage = lazy(() => import("@/pages/onboarding/WelcomeShowcasePage"));
 export const SplashTestPage = lazy(() => import("@/pages/test/SplashTestPage"));
-export const TestAgentPage = lazy(() => import("@/pages/test/TestAgentPage"));
 
 /* ── Standalone utilities ─────────────────────────────────────── */
 export const SlidesPreviewPage = lazy(() => import("@/pages/SlidesPreviewPage"));
