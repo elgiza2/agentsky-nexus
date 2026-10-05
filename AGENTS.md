@@ -1,12 +1,10 @@
 # Megsy — Agent Handbook
 
-Read this before touching anything. It captures the decisions that are easy to
-get wrong and expensive to undo.
+Read before editing; these rules preserve existing behavior.
 
 ## 1. What this project is
 
-Megsy AI (megsyai.com) — a React SPA (react-router-dom) that was imported into a
-TanStack Start shell so it can be built and hosted on Lovable.
+Megsy AI (megsyai.com): an imported React SPA inside a TanStack Start shell.
 
 - `src/routes/__root.tsx` — the HTML shell (head, fonts, boot styles, snapshot
   restore, speculation rules). Do not put page UI here.
@@ -21,10 +19,7 @@ Do NOT create new files under `src/routes/` except real API endpoints.
 
 ## 2. Where the provider keys live (important)
 
-All provider API keys are stored **in the database**, encrypted, in the
-`service_keys` table (`key_cipher` + `key_iv`), and they are only ever decrypted
-**inside the deployed Supabase Edge Functions**. The app itself never sees a raw
-key and must never try to.
+Legacy provider keys live encrypted in `service_keys` (`key_cipher`, `key_iv`), decrypted only in deployed Supabase Edge Functions; never expose them to the app.
 
 Current providers:
 
@@ -37,8 +32,6 @@ Current providers:
 
 Rotation happens in Postgres via `take_service_key(provider)` (least recently
 used, `FOR UPDATE SKIP LOCKED`).
-
-Consequences:
 
 - Chat stays free. Credits use daily, bonus, plan, and purchased buckets; image costs 2, video 25, and agent work 1–50.
 - The local `/api/chat` proxy (`src/lib/chat/proxyCore.ts`,
@@ -59,7 +52,7 @@ Consequences:
 ## 4. Front-end rules
 
 - Media runs require a live paid-plan check in both authenticated media routes and signed MCP tools; Higgsfield clones only a configured Hypit template, never substitutes a harness. Why: UI locks alone do not prevent free media spending or misrepresent the requested agent.
-- Auth welcome, email/password, OTP and reset screens share the Cue-style character shell across viewports while preserving existing auth handlers. Why: registration and recovery must remain visually consistent.
+- Auth welcome, email/password, OTP and reset share one character shell and existing handlers. Why: keep registration and recovery consistent.
 
 - Agent pages reuse AppSidebar, and AgentSky turns render inside the original ChatPage; per-message agent identity and steps persist in metadata. Why: one navigation and transcript prevents detached agent workspaces.
 - AgentSky turn subscriptions stop on fresh session.status_idle/session.error events, with persisted-event reconciliation and baseline IDs. Why: the standing SSE feed may omit terminal frames or remain open after completion.
