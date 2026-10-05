@@ -156,3 +156,9 @@
 - [x] Wake only on the first chat turn; start subsequent turns thinking.
 - [x] List available provider agents safely and enforce subscriber-only switching.
 - [x] Review the real signed-in chat using the supplied test account.
+
+## Requested polish and resilience (October 5)
+- [ ] Redesign agent thinking, sleeping and completed appearance; remove the white-looking body and refine colors after visual selection.
+- [ ] Keep long provider tasks connected or reconcile them after transient stream/network interruptions.
+- [ ] Present real activity badges for every tool, including search, code, Python, images and video, with a readable fallback.
+- [ ] Fully redesign Agents as a clean, clear, simple page within the original site navigation after visual selection.
