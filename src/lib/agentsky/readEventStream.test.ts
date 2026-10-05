@@ -26,4 +26,13 @@ describe("AgentSky standing event stream", () => {
     const body = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(encoder.encode('data: {"id":"1","type":"agent.message"}\n\n')); controller.close(); } });
     await expect(readEventStream(body, () => { throw new Error("render failed"); })).rejects.toThrow("render failed");
   });
+  it("ignores JSON heartbeats and null payloads without event identities", async () => {
+    const body = new ReadableStream<Uint8Array>({ start(controller) {
+      controller.enqueue(encoder.encode('data: null\n\ndata: {"heartbeat":true}\n\ndata: {"id":"end","type":"session.status_idle"}\n\n'));
+      controller.close();
+    } });
+    const callback = vi.fn(() => true);
+    await readEventStream(body, callback);
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
 });

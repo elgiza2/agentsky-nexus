@@ -10,6 +10,7 @@ export async function readEventStream(body: ReadableStream<Uint8Array>, onEvent:
     if (!data || data === "[DONE]") return false;
     let event: RawEvent;
     try { event = JSON.parse(data); } catch { return false; }
+    if (!event || typeof event.type !== "string" || typeof event.id !== "string") return false;
     return onEvent(event) === true;
   };
   try {
