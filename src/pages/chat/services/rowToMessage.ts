@@ -122,6 +122,7 @@ export function rowToMessage(
     modelLabel: typeof meta.modelLabel === "string" ? meta.modelLabel : undefined,
     agentSkySessionId: typeof meta.agentSkySessionId === "string" ? meta.agentSkySessionId : undefined,
     agentSkyCards: Array.isArray(meta.agentSkyCards) ? meta.agentSkyCards : undefined,
+    agentSkyRequests: Array.isArray(meta.agentSkyRequests) ? meta.agentSkyRequests : undefined,
     interrupted: interrupted || undefined,
   } as Message;
 }

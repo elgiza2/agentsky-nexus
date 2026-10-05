@@ -55,7 +55,7 @@ export default function AgentTasksPage() {
             const a = agents.find((x) => x.id === s?.agentId);
             const state = t.attention === "working" ? "tool" : t.attention === "failed" ? "error" : t.attention === "done" ? "idle" : "thinking";
             return (
-              <button key={t.id} type="button" onClick={() => nav(`/chat/${t.id}`)} className="ag-card flex w-full items-center gap-3 p-3.5 text-start">
+              <button key={t.id} type="button" onClick={() => nav("/chat")} className="ag-card flex w-full items-center gap-3 p-3.5 text-start">
                 <AgentOrb size={34} color={a?.color} state={state} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold">{t.title || s?.title || (ar ? "مهمة" : "Task")}</div>

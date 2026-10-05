@@ -1,7 +1,7 @@
 /** @doc Agent workspace layout: sidebar (new chat, tasks, agents, studio, recent chats, settings) + main area. */
 import { useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Plus, ListTodo, Bot, Wand2, Settings, Menu, Trash2 } from "lucide-react";
+import { Plus, ListTodo, Bot, Settings, Menu, Trash2 } from "lucide-react";
 import { useWorkspaceStore, workspace } from "@/lib/agentsky/store";
 import { agentApi } from "@/lib/agentsky/client";
 import { AgentOrb } from "./AgentOrb";
@@ -18,7 +18,6 @@ function Sidebar({ lang, onNav }: { lang: "en" | "ar"; onNav?: () => void }) {
   const items = [
     { p: "/tasks", icon: ListTodo, label: ar ? "المهام" : "Tasks" },
     { p: "/agents", icon: Bot, label: ar ? "الوكلاء" : "Agents" },
-    { p: "/studio", icon: Wand2, label: ar ? "الاستوديو" : "Studio" },
   ];
   return (
     <aside className="ag-side h-full">
@@ -41,7 +40,7 @@ function Sidebar({ lang, onNav }: { lang: "en" | "ar"; onNav?: () => void }) {
           const active = loc.pathname === `/chat/${s.id}`;
           return (
             <div key={s.id} className="group relative">
-              <button type="button" className="ag-side__item pe-8" data-active={active} onClick={() => go(`/chat/${s.id}`)}>
+              <button type="button" className="ag-side__item pe-8" data-active={active} onClick={() => go("/chat")}>
                 <AgentOrb size={16} color={a?.color} state={s.status === "running" ? "thinking" : "idle"} />
                 <span className="truncate">{s.title || (ar ? "شات" : "Chat")}</span>
               </button>

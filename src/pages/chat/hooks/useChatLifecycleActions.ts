@@ -27,6 +27,7 @@ interface NewChatArgs {
   setSelectedModel: (v: null) => void;
   setSelectedAgent: (v: null) => void;
   isSubmittingRef: React.MutableRefObject<boolean>;
+  onAgentSkyReset?: () => void;
 }
 
 /**
@@ -65,6 +66,7 @@ export function useChatNewChat(args: NewChatArgs) {
     args.setSelectedModel(null);
     args.setSelectedAgent(null);
     args.isSubmittingRef.current = false;
+    args.onAgentSkyReset?.();
   }, [args]);
 }
 

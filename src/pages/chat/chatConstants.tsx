@@ -14,6 +14,7 @@ import type { MediaPlan } from "@/components/chat/media/MediaPlanCard";
 import type { MediaSceneResult } from "@/components/chat/media/MediaResultCard";
 import type { ModelEffort } from "@/lib/chatModelPreferences";
 import type { Card as AgentSkyCard } from "@/lib/agentsky/transcript";
+import type { AgentRequest } from "@/lib/agentsky/client";
 
 export interface ProductResult {
   title: string;
@@ -137,6 +138,7 @@ export interface Message {
   /** AgentSky session state rendered inside the original Megsy transcript. */
   agentSkySessionId?: string;
   agentSkyCards?: AgentSkyCard[];
+  agentSkyRequests?: AgentRequest[];
 
 }
 

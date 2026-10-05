@@ -165,6 +165,9 @@ const runDocsTurn = (...args: Parameters<typeof import("./services/runDocsTurn")
 const runChatStreamTurn = (
   ...args: Parameters<typeof import("./services/runChatStreamTurn").runChatStreamTurn>
 ) => import("./services/runChatStreamTurn").then((m) => m.runChatStreamTurn(...args));
+const runAgentSkyTurn = (
+  ...args: Parameters<typeof import("./services/runAgentSkyTurn").runAgentSkyTurn>
+) => import("./services/runAgentSkyTurn").then((m) => m.runAgentSkyTurn(...args));
 import {
   generateShortTitle as apiGenerateShortTitle,
   createOrUpdateConversation as apiCreateOrUpdateConversation,
@@ -1374,6 +1377,8 @@ const ChatPage = () => {
   };
 
   const isSubmittingRef = useRef(false);
+  const activeAgentSkySessionRef = useRef<string | null>(null);
+  const queuedAgentMessagesRef = useRef<string[]>([]);
   const slidesRunningRef = useRef(false);
   const mediaTurnActiveRef = useRef(false);
   const hasActiveMediaGeneration = messages.some((message) => {
@@ -1467,18 +1472,13 @@ const ChatPage = () => {
     const hasFrames = chatMode === "video" && videoStartEndMode && !!startFrameUrl && !!endFrameUrl;
     if (!text.trim() && attachedFiles.length === 0 && !hasFrames) return;
     if (isLoading) {
-      // A tool run (search / images / video / computer) can take a minute or
-      // more. Sending during it used to be silently swallowed, which felt like
-      // a frozen send button. Now a new send interrupts the running task.
-      try {
-        handleCancel();
-      } catch (err) {
-        console.error("[send] cancel before resend failed", err);
+      if (text.trim()) {
+        queuedAgentMessagesRef.current.push(text.trim());
+        setInput("");
+        setAttachedFiles([]);
+        toast.success(getUserLang() === "ar-eg" ? "اتضافت للانتظار وهتتبعت أول ما يخلص" : "Queued and will send when the agent finishes");
       }
-      isSubmittingRef.current = false;
-      setIsLoading(false);
-      setIsThinking(false);
-      await new Promise((r) => setTimeout(r, 60));
+      return;
     }
     if (isSubmittingRef.current) {
       // Only a true double-tap (same 2.5s) is swallowed; anything older never
@@ -1539,6 +1539,66 @@ const ChatPage = () => {
       zoneNavigate(
         `/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`,
       );
+      return;
+    }
+
+    // AgentSky is the single provider for chat, browsing, tools, images and
+    // video. The original Megsy shell remains unchanged around this turn.
+    if (text.trim() && chatUserId) {
+      isSubmittingRef.current = true;
+      submitLockAtRef.current = Date.now();
+      const pendingAttachments = attachedFiles.filter(
+        (file) => file.data.startsWith("__parsing_") || file.data.startsWith("__uploading_"),
+      );
+      if (pendingAttachments.length) {
+        toast.info("Please wait until attachments finish processing");
+        isSubmittingRef.current = false;
+        return;
+      }
+      const localTurnId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random()}`;
+      const images = attachedFiles.filter((file) => file.type === "image").map((file) => file.data);
+      const userMsg: Message = {
+        role: "user",
+        clientId: `user-${localTurnId}`,
+        content: text,
+        attachedImages: images,
+        mode: chatMode,
+      };
+      const previousSessionId =
+        activeAgentSkySessionRef.current ||
+        [...messages].reverse().find((message) => message.agentSkySessionId)?.agentSkySessionId;
+      const requestedAgentId = new URLSearchParams(location.search).get("agent") || undefined;
+      try {
+        await runAgentSkyTurn({
+          text,
+          userMsg,
+          localTurnId,
+          sessionId: previousSessionId,
+          agentId: requestedAgentId,
+          lang: getUserLang() === "ar-eg" ? "ar" : "en",
+          images,
+          setMessages,
+          setInput,
+          setAttachedFiles,
+          setIsLoading,
+          setIsThinking,
+          abortControllerRef,
+          createOrUpdateConversation,
+          saveMessage,
+          ownInsertedIdsRef,
+          onRequests: () => undefined,
+          onSession: (sessionId) => {
+            activeAgentSkySessionRef.current = sessionId;
+          },
+        });
+      } finally {
+        isSubmittingRef.current = false;
+        const next = queuedAgentMessagesRef.current.shift();
+        if (next) window.setTimeout(() => void sendWithTextRef.current?.(next), 80);
+      }
       return;
     }
 
@@ -2401,6 +2461,10 @@ const ChatPage = () => {
     setSelectedModel,
     setSelectedAgent,
     isSubmittingRef,
+    onAgentSkyReset: () => {
+      activeAgentSkySessionRef.current = null;
+      queuedAgentMessagesRef.current = [];
+    },
   });
 
   // Keep the open conversation + mode in the URL so reload restores the exact

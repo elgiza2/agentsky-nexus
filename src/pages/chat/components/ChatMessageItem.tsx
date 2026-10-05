@@ -23,6 +23,7 @@ const ComputerPreviewLazy = lazy(() =>
 const SiteBuildCard = lazy(() => import("@/components/chat/site/SiteBuildCard"));
 const UpgradeRequiredCard = lazy(() => import("@/components/chat/UpgradeRequiredCard"));
 const AssistantDocsClarifyBlock = lazy(() => import("./AssistantDocsClarifyBlock"));
+const AgentSkyBlocks = lazy(() => import("./AgentSkyBlocks"));
 import { type Message, EMPTY_READERS, EMPTY_REACTIONS } from "../chatConstants";
 import {
   snapshotAndTruncateForRegenerate,
@@ -205,7 +206,7 @@ const ChatMessageItemImpl = ({
           searchStatus={isLastAssistant ? (searchStatus as any) : undefined}
           toolActivity={isLastAssistant ? (toolActivity as any) : null}
           parallelTasks={isLastAssistant ? (parallelTasks as any) : undefined}
-          toolParts={msg.toolParts}
+          toolParts={msg.agentSkySessionId ? undefined : msg.toolParts}
           reasoning={msg.reasoning}
           interrupted={msg.interrupted}
           timing={msg.timing}
@@ -397,6 +398,11 @@ const ChatMessageItemImpl = ({
             kind={msg.mode === "video" ? "video" : "images"}
           />
         </div>
+      )}
+      {msg.role === "assistant" && msg.agentSkySessionId && (
+        <Suspense fallback={null}>
+          <AgentSkyBlocks message={msg} onSend={(text) => void handleSendWithText(text)} />
+        </Suspense>
       )}
       {msg.role === "assistant" && msg.slidesDeck && (
         <div className="px-3 md:px-12">
