@@ -24,7 +24,7 @@ export function AgentsPage() {
   const filtered = agents.filter((a) => `${a.name} ${a.description}`.toLowerCase().includes(query.toLowerCase()));
   return (
     <AgentShell lang={lang} title={ar ? "الوكلاء" : "Agents"} actions={<Button variant="neutral" size="sm" onClick={() => nav("/agents/new")}><Plus />{ar ? "وكيل جديد" : "New agent"}</Button>}>
-      <SEOHead title="Agents — Megsy AI" description="Your Megsy agents and their conversations." />
+      <SEOHead path="/agents" title="Agents — Megsy AI" description="Your Megsy agents and their conversations." />
       <div className="flex-1 overflow-y-auto px-5 py-8 md:px-10 md:py-12">
         <div className="mx-auto w-full max-w-5xl">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
@@ -93,7 +93,7 @@ export function AgentNewPage() {
         </Button>
       }
     >
-      <SEOHead title="New Agent — Megsy AI" description="Create a personal Megsy agent." />
+      <SEOHead path="/agents/new" title="New Agent — Megsy AI" description="Create a personal Megsy agent." />
       <div className="ag-scroll" data-agent-color={color}>
         <div className="mx-auto grid w-full max-w-4xl gap-8 px-5 py-10 md:grid-cols-[1fr_220px] md:px-10">
           <div className="space-y-5">
