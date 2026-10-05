@@ -11,6 +11,7 @@ export type AgentInfo = {
   color: AgentColor;
   prompt: string;
   isDefault: boolean;
+  isTemplate?: boolean;
   createdAt: string;
 };
 

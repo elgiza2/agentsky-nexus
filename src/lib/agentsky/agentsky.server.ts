@@ -79,6 +79,38 @@ export async function listUserAgents(userId: string): Promise<AgentRecord[]> {
   return (agents as any[]).filter((a) => !a.archived && String(a.name).startsWith(p));
 }
 
+/** Only deliberately configured catalogue templates, never another user's agents. */
+export async function listAgentTemplates() {
+  const { agents } = await api<{ agents: any[] }>("/agents");
+  const seen = new Set<string>();
+  return agents.filter((a) => {
+    if (a.archived || !String(a.name).startsWith("Chat · ")) return false;
+    const key = `${a.agentType}:${a.llm}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export async function resolveUserAgent(userId: string, origin: string, id?: string) {
+  if (!id?.startsWith("template:")) return id ? getOwnedAgent(userId, id) : ensureDefaultAgent(userId, origin);
+  const template = (await listAgentTemplates()).find((a) => `template:${a.id}` === id);
+  if (!template) throw new AgentSkyError(404, "not_found", "Agent not found");
+  const name = `${ownerPrefix(userId)}_tpl_${template.id}`.slice(0, 60);
+  const existing = (await listUserAgents(userId)).find((a) => a.name === name);
+  if (existing) return existing;
+  const { agent } = await api<{ agent: any }>("/agents", {
+    method: "POST",
+    headers: { "Idempotency-Key": name },
+    body: JSON.stringify({
+      ...agentSpec({ userId, origin, displayName: String(template.name).replace(/^Chat · /, ""), kind: "custom", color: "ocean" }),
+      name, agentType: template.agentType, llm: template.llm,
+      metadata: { owner: userId, kind: "custom", templateId: id, color: "ocean" },
+    }),
+  });
+  return agent;
+}
+
 export async function getOwnedAgent(userId: string, agentId: string) {
   const { agent } = await api<{ agent: any }>(`/agents/${encodeURIComponent(agentId)}`);
   if (!String(agent?.name || "").startsWith(ownerPrefix(userId)) || agent.archived)

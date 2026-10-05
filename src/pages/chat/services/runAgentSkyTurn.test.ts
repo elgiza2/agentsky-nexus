@@ -33,6 +33,14 @@ beforeEach(() => {
   mocks.interrupt.mockResolvedValue({ status: "idle" });
 });
 describe("original chat agent turn lifecycle", () => {
+  it("wakes on the first turn only and thinks immediately on subsequent turns", async () => {
+    const first = setup();
+    mocks.stream.mockImplementation(async () => { expect(first.messages()[1].agentSkyState).toBe("awakening"); });
+    await runAgentSkyTurn(first.args);
+    const next = setup("session");
+    mocks.stream.mockImplementation(async () => { expect(next.messages()[1].agentSkyState).toBe("thinking"); });
+    await runAgentSkyTurn(next.args);
+  });
   it("returns terminal signal, releases loading and saves identity and completed response", async () => {
     mocks.stream.mockImplementation(async (_sid, callback) => {
       expect(callback(running)).toBe(false);
