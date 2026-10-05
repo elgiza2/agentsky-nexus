@@ -155,7 +155,7 @@ const UI_DICT: Record<string, Entry> = {
   logIn: { en: "Log in", "ar-eg": "دخول" },
   upgrade: { en: "Upgrade", "ar-eg": "ترقية" },
   getPlus: { en: "Get Plus", "ar-eg": "هات بلس" },
-  placeholderAsk: { en: "Ask Megsy anything…", "ar-eg": "اسأل Megsy أي حاجة…" },
+  placeholderAsk: { en: "Message Megsy…", "ar-eg": "اكتب رسالتك…" },
   placeholderProject: { en: "Start your next project with one idea…", "ar-eg": "ابدأ مشروعك الجاي بفكرة واحدة…" },
   greeting1: { en: "", "ar-eg": "" },
   greeting2: { en: "What should we build today?", "ar-eg": "نبني إيه النهارده؟" },

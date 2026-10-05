@@ -50,7 +50,7 @@ export const workspace = {
     set({ sessions: state.sessions.filter((x) => x.id !== id) });
   },
   addAgent(a: AgentInfo) {
-    set({ agents: [...state.agents, a] });
+    set({ agents: [...state.agents.filter((x) => x.id !== a.id), a] });
   },
   removeAgent(id: string) {
     set({ agents: state.agents.filter((x) => x.id !== id) });

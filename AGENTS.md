@@ -58,6 +58,9 @@ Consequences:
 
 ## 4. Front-end rules
 
+- Media runs require a live paid-plan check in both authenticated media routes and signed MCP tools; Higgsfield clones only a configured Hypit template, never substitutes a harness. Why: UI locks alone do not prevent free media spending or misrepresent the requested agent.
+- Auth welcome, email/password, OTP and reset screens share the Cue-style character shell across viewports while preserving existing auth handlers. Why: registration and recovery must remain visually consistent.
+
 - Agent pages reuse AppSidebar, and AgentSky turns render inside the original ChatPage; per-message agent identity and steps persist in metadata. Why: one navigation and transcript prevents detached agent workspaces.
 - AgentSky turn subscriptions stop on fresh session.status_idle/session.error events, with persisted-event reconciliation and baseline IDs. Why: the standing SSE feed may omit terminal frames or remain open after completion.
 - Provider catalogue uses only explicitly named `Chat · ` templates, cloned into user-owned agents before use; subscription checks cover new sessions and follow-up messages. Why: shared templates must not expose other users' agents or bypass paid switching.

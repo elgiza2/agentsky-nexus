@@ -211,7 +211,7 @@ export const EGYPTIAN_EXTRA: Record<string, string> = {
   "Download HTML": "نزّل HTML",
   "Download as HTML": "نزّل كـ HTML",
   "Code preview": "معاينة الكود",
-  "Ask Megsy anything…": "اسأل Megsy أي حاجة…",
+  "Message Megsy…": "اكتب رسالتك…",
   "Megsy writes the work in front of you.": "Megsy بيشتغل قدامك خطوة بخطوة.",
   "Get started with Megsy": "ابدأ مع Megsy",
   "Minimize": "تصغير",

@@ -4,6 +4,7 @@ import { agentApi, openStream, type AgentRequest, type RawEvent } from "@/lib/ag
 import { buildTranscript, orbStateFor, type AgentTurn, type Lang } from "@/lib/agentsky/transcript";
 import type { Message, ToolPart } from "../chatConstants";
 import { loadWorkspace, workspace } from "@/lib/agentsky/store";
+import { detectMediaIntent } from "@/lib/agentsky/mediaIntent";
 import type { AttachedFile } from "../hooks/useAttachments";
 
 type Args = {
@@ -44,20 +45,23 @@ const toToolParts = (turn?: AgentTurn): ToolPart[] | undefined =>
     }));
 
 export async function runAgentSkyTurn(args: Args): Promise<void> {
+  const mediaTurn = Boolean(detectMediaIntent(args.text));
+  const selectedAgentId = mediaTurn ? "higgsfield" : args.agentId;
   const assistantClientId = `assistant-${args.localTurnId}`;
   const controller = new AbortController();
   args.abortControllerRef.current = controller;
   const update = (patch: Partial<Message>) => args.setMessages((prev) => prev.map((message) => message.clientId === assistantClientId ? { ...message, ...patch } : message));
   args.setMessages((prev) => [...prev, args.userMsg, {
     role: "assistant", content: "", clientId: assistantClientId, agentPending: true,
-    agentSkyState: args.sessionId || args.hasPriorTurns ? "thinking" : "awakening", modelLabel: "OpenClaw · gpt-5.6-luna",
+    agentSkyState: args.sessionId || args.hasPriorTurns ? "thinking" : "awakening", modelLabel: mediaTurn ? "higgsfield · Hypit" : "OpenClaw · gpt-5.6-luna",
+    ...(mediaTurn ? { agentSkyAgent: { id: "higgsfield", name: "higgsfield", color: "sun" as const } } : {}),
   }]);
   args.setInput("");
   args.setAttachedFiles([]);
   args.setIsLoading(true);
   args.setIsThinking(true);
 
-  let sid = args.sessionId;
+  let sid = mediaTurn ? undefined : args.sessionId;
   let events: RawEvent[] = [];
   let turn: AgentTurn | undefined;
   let conversationId: string | null = null;
@@ -82,22 +86,24 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
   const conversationPromise = args.createOrUpdateConversation(args.text || "New chat").catch(() => null);
   try {
     await loadWorkspace();
+    if (mediaTurn) identity = { id: "higgsfield", name: "higgsfield", color: "sun" };
     if (sid) {
       const existing = await agentApi.session(sid);
       identity = workspace.agent(existing.session.agentId);
       const history = await agentApi.events(sid);
       history.events.forEach((event) => baseline.add(event.id));
     } else {
-      identity = workspace.agent(args.agentId);
+      if (!mediaTurn) identity = workspace.agent(selectedAgentId);
     }
     if (identity) identity = { id: identity.id, name: identity.name, color: identity.color };
     update({ agentSkyAgent: identity });
     if (controller.signal.aborted) { stopped = true; return; }
     if (!sid) {
-      const created = await agentApi.createSession({ agentId: args.agentId, text: args.text, images: args.images });
+      const created = await agentApi.createSession({ agentId: selectedAgentId, text: args.text, images: args.images });
       sid = created.session.id;
       workspace.upsertSession(created.session);
-      const selected = workspace.agent(created.session.agentId);
+      if (created.agent) workspace.addAgent(created.agent);
+      const selected = created.agent ?? workspace.agent(created.session.agentId);
       if (selected) identity = { id: selected.id, name: selected.name, color: selected.color };
     } else {
       await agentApi.send(sid, args.text, args.images);
@@ -182,7 +188,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
           agentSkyState: failure || turn?.error ? "error" : "done",
           agentSkyCards: turn?.cards ?? [], agentSkyRequests: requests,
           reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n"),
-          toolParts: toToolParts(turn), modelLabel: "OpenClaw · gpt-5.6-luna",
+          toolParts: toToolParts(turn), modelLabel: mediaTurn ? "higgsfield · Hypit" : "OpenClaw · gpt-5.6-luna",
         };
         const text = failure || turn?.error || turn?.text || (stopped ? (args.lang === "ar" ? "اتوقف." : "Stopped.") : "");
         const assistantId = await args.saveMessage(conversationId, "assistant", text, undefined, metadata);

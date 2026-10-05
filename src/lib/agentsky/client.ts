@@ -56,7 +56,7 @@ export const agentApi = {
   deleteAgent: (id: string) => req("agents/" + id, { method: "DELETE" }),
   sessions: () => req<{ sessions: SessionInfo[] }>("sessions"),
   createSession: (p: { agentId?: string; text: string; images?: string[] }) =>
-    req<{ session: SessionInfo }>("sessions", { method: "POST", body: JSON.stringify(p) }),
+    req<{ session: SessionInfo; agent?: AgentInfo }>("sessions", { method: "POST", body: JSON.stringify(p) }),
   session: (id: string) => req<{ session: SessionInfo }>("sessions/" + id),
   renameSession: (id: string, title: string) => req("sessions/" + id, { method: "PATCH", body: JSON.stringify({ title }) }),
   deleteSession: (id: string) => req("sessions/" + id, { method: "DELETE" }),

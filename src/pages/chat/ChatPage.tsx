@@ -1576,7 +1576,7 @@ const ChatPage = () => {
           text,
           userMsg,
           localTurnId,
-          sessionId: requestedAgentId && lastAgentId && requestedAgentId !== lastAgentId ? undefined : previousSessionId,
+          sessionId: (requestedAgentId && lastAgentId && requestedAgentId !== lastAgentId) || messages.some((message) => message.agentSkyAgent?.id === lastAgentId && message.agentSkyAgent?.name === "higgsfield") ? undefined : previousSessionId,
           agentId: requestedAgentId,
           hasPriorTurns: messages.some((message) => message.role === "assistant" && Boolean(message.agentSkySessionId)),
           lang: getUserLang() === "ar-eg" ? "ar" : "en",
