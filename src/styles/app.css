@@ -29,4 +29,5 @@
 @import "./desktop-workspace.css";
 /* Device-tier layer last, so nothing re-adds the expensive decorative effects
    it strips on weak devices. */
+@import "./agent.css";
 @import "./perf-tier.css";
