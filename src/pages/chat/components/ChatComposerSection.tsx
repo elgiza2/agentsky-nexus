@@ -69,7 +69,7 @@ function DesktopFastshotComposer({ props }: { props: ChatComposerSectionProps })
           <Button className="desktop-fastshot-cta" onClick={() => props.navigate("/pricing")}>Upgrade</Button>
         </header>
         <main className="desktop-fastshot-hero">
-          <h1>Describe anything. Megsy will build it.</h1>
+          {props.desktopGreeting}
           <form className="desktop-fastshot-card" onSubmit={(event) => { event.preventDefault(); send(); }}>
             {hasActiveMode ? (
               <div className="desktop-fastshot-service-bar">

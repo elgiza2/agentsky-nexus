@@ -2,7 +2,7 @@
 import { memo } from "react";
 import type { AgentColor } from "@/lib/agentsky/client";
 
-export type OrbState = "idle" | "awakening" | "thinking" | "tool" | "talking" | "done" | "error";
+export type OrbState = "idle" | "sleeping" | "hello" | "awakening" | "thinking" | "tool" | "talking" | "done" | "error";
 
 export const AgentOrb = memo(function AgentOrb({
   state = "idle",
@@ -35,6 +35,7 @@ export const AgentOrb = memo(function AgentOrb({
         <span className="ag-orb__eye" />
         <span className="ag-orb__eye" />
       </div>
+      <span className="ag-orb__sleep" aria-hidden="true">z<span>z</span></span>
     </div>
   );
 });

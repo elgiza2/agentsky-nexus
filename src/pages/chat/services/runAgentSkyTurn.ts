@@ -12,6 +12,7 @@ type Args = {
   localTurnId: string;
   sessionId?: string;
   agentId?: string;
+  hasPriorTurns?: boolean;
   lang: Lang;
   images?: string[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -49,7 +50,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
   const update = (patch: Partial<Message>) => args.setMessages((prev) => prev.map((message) => message.clientId === assistantClientId ? { ...message, ...patch } : message));
   args.setMessages((prev) => [...prev, args.userMsg, {
     role: "assistant", content: "", clientId: assistantClientId, agentPending: true,
-    agentSkyState: "awakening", modelLabel: "OpenClaw · gpt-5.6-luna",
+    agentSkyState: args.sessionId || args.hasPriorTurns ? "thinking" : "awakening", modelLabel: "OpenClaw · gpt-5.6-luna",
   }]);
   args.setInput("");
   args.setAttachedFiles([]);

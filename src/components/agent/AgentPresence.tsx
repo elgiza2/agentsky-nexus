@@ -6,6 +6,7 @@ export function AgentPresence({ message }: { message: Message }) {
   const ar = useUserLang() === "ar-eg";
   const state = message.agentSkyState ?? "done";
   const labels = {
+    sleeping: ar ? "نايم" : "Sleeping", hello: ar ? "أهلاً!" : "Hello!",
     awakening: ar ? "الوكيل يستيقظ" : "Agent is waking up",
     thinking: ar ? "بيفكر…" : "Thinking…",
     tool: ar ? "بينفّذ…" : "Working…",

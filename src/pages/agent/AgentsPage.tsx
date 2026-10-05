@@ -1,7 +1,7 @@
 /** @doc Agents list + full-page agent builder (/agents and /agents/new). */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, Loader2, ArrowLeft, ArrowUpRight, Search } from "lucide-react";
+import { Plus, Trash2, Loader2, ArrowLeft, ArrowUpRight, Search, Lock } from "lucide-react";
 import { useUserLang } from "@/lib/authI18n";
 import { agentApi, type AgentColor } from "@/lib/agentsky/client";
 import { useWorkspaceStore, workspace } from "@/lib/agentsky/store";
@@ -17,7 +17,7 @@ export function AgentsPage() {
   const lang = useUserLang() === "ar-eg" ? "ar" : "en";
   const ar = lang === "ar";
   const nav = useNavigate();
-  const { agents, ready, error, sessions } = useWorkspaceStore();
+  const { agents, ready, error, sessions, tier } = useWorkspaceStore();
   const [query, setQuery] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -37,14 +37,14 @@ export function AgentsPage() {
             {filtered.map((a) => {
               const active = sessions.filter((s) => s.agentId === a.id && s.status === "running").length;
               return <article key={a.id} className="group flex min-h-64 flex-col rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/30" data-agent-color={a.color}>
-                <div className="mb-6 flex items-start justify-between gap-3"><AgentOrb size={58} color={a.color} state={active ? "tool" : "idle"} />{a.isDefault ? <span className="text-xs text-muted-foreground">{ar ? "الأساسي" : "Default"}</span> : <Button variant="ghost" size="icon-sm" title={ar ? "حذف الوكيل" : "Delete agent"} aria-label={ar ? "حذف الوكيل" : "Delete agent"} disabled={deleting === a.id} onClick={async () => {
+                <div className="mb-6 flex items-start justify-between gap-3"><AgentOrb size={58} color={a.color} state={active ? "tool" : "idle"} />{a.isDefault || a.isTemplate ? <span className="text-xs text-muted-foreground">{a.isDefault ? (ar ? "الأساسي" : "Default") : (ar ? "من المزود" : "Provider")}</span> : <Button variant="ghost" size="icon-sm" title={ar ? "حذف الوكيل" : "Delete agent"} aria-label={ar ? "حذف الوكيل" : "Delete agent"} disabled={deleting === a.id} onClick={async () => {
                   if (!confirm(ar ? "تحذف الوكيل ده؟" : "Delete this agent?")) return;
                   setDeleting(a.id); setDeleteError(null);
                   try { await agentApi.deleteAgent(a.id); workspace.removeAgent(a.id); } catch (e) { setDeleteError(e instanceof Error ? e.message : "Could not delete agent"); } finally { setDeleting(null); }
                 }}><Trash2 /></Button>}</div>
                 <h2 className="break-words text-lg font-semibold">{a.name}</h2>
                 <p className="mt-2 mb-6 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.description || (ar ? "وكيل عام" : "General agent")}</p>
-                <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4"><span className="text-xs text-muted-foreground">{active ? (ar ? `${active} مهمة شغالة` : `${active} active tasks`) : (ar ? "جاهز" : "Ready")}</span><Button variant="ghost" size="sm" onClick={() => nav(`/chat?agent=${encodeURIComponent(a.id)}`)}>{ar ? "ابدأ شات" : "Start chat"}<ArrowUpRight className="rtl:-scale-x-100" /></Button></div>
+                <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4"><span className="text-xs text-muted-foreground">{active ? (ar ? `${active} مهمة شغالة` : `${active} active tasks`) : (ar ? "جاهز" : "Ready")}</span><Button variant="ghost" size="sm" onClick={() => nav(!a.isDefault && tier !== "pro" ? "/pricing" : `/chat?agent=${encodeURIComponent(a.id)}`)}>{!a.isDefault && tier !== "pro" ? <><Lock />{ar ? "للمشتركين" : "Subscribers"}</> : <>{ar ? "ابدأ شات" : "Start chat"}<ArrowUpRight className="rtl:-scale-x-100" /></>}</Button></div>
               </article>;
             })}
           </div>

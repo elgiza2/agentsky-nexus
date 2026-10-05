@@ -1578,6 +1578,7 @@ const ChatPage = () => {
           localTurnId,
           sessionId: requestedAgentId && lastAgentId && requestedAgentId !== lastAgentId ? undefined : previousSessionId,
           agentId: requestedAgentId,
+          hasPriorTurns: messages.some((message) => message.role === "assistant" && Boolean(message.agentSkySessionId)),
           lang: getUserLang() === "ar-eg" ? "ar" : "en",
           images,
           setMessages,

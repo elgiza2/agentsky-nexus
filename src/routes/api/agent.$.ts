@@ -9,6 +9,8 @@ import {
   getOwnedAgent,
   getOwnedSession,
   listUserAgents,
+  listAgentTemplates,
+  resolveUserAgent,
   publicOrigin,
   streamSession,
 } from "@/lib/agentsky/agentsky.server";
@@ -57,7 +59,13 @@ async function fullAgents(userId: string, origin: string) {
   const details = await Promise.all(
     list.map((a) => api<{ agent: any }>(`/agents/${a.id}`).then((r) => r.agent).catch(() => a)),
   );
-  return details.map(agentView).sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+  const templates = await listAgentTemplates();
+  const catalogue = templates.map((a, index) => ({
+    id: `template:${a.id}`, name: String(a.name).replace(/^Chat · /, ""),
+    description: a.llm || "", color: ["ocean", "mint", "rose", "ember"][index % 4],
+    prompt: "", isDefault: false, isTemplate: true, createdAt: a.createdAt,
+  }));
+  return [...details.filter((a) => !a.metadata?.templateId).map(agentView), ...catalogue].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 }
 
 async function handle(request: Request, splat: string): Promise<Response> {
@@ -121,7 +129,12 @@ async function handle(request: Request, splat: string): Promise<Response> {
       return j({ sessions });
     }
     if (!sid && method === "POST") {
-      const agentId = body?.agentId ? (await getOwnedAgent(uid, body.agentId)).id : (await ensureDefaultAgent(uid, origin)).id;
+      const requestedId = typeof body?.agentId === "string" ? body.agentId : undefined;
+      if (requestedId && await userTier(uid) === "free") {
+        const defaultAgent = await ensureDefaultAgent(uid, origin);
+        if (requestedId !== defaultAgent.id) return j({ error: { code: "upgrade_required", message: "تغيير الوكيل متاح للمشتركين بس." } }, 402);
+      }
+      const agentId = (await resolveUserAgent(uid, origin, requestedId)).id;
       const content = contentOf(body);
       if (!content.length) return j({ error: { code: "invalid_request", message: "Empty message" } }, 400);
       const title = String(body?.text || "New chat").replace(/\s+/g, " ").slice(0, 80) || "New chat";
@@ -161,6 +174,10 @@ async function handle(request: Request, splat: string): Promise<Response> {
       });
     }
     if (parts[2] === "messages" && method === "POST") {
+      if (await userTier(uid) === "free") {
+        const defaultAgent = await ensureDefaultAgent(uid, origin);
+        if (session.agentId !== defaultAgent.id) return j({ error: { code: "upgrade_required", message: "تغيير الوكيل متاح للمشتركين بس." } }, 402);
+      }
       const content = contentOf(body);
       if (!content.length) return j({ error: { code: "invalid_request", message: "Empty message" } }, 400);
       // No requireIdle: AgentSky queues a message sent while the agent works.

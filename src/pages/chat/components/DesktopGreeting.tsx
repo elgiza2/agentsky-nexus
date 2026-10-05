@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { m as motion } from "framer-motion";
 import { t as uiT, useUserLang } from "@/lib/authI18n";
-import MegsyStarGradient from "@/components/branding/MegsyStarGradient";
+import { useLocation } from "react-router-dom";
+import { AgentOrb, type OrbState } from "@/components/agent/AgentOrb";
+import { useWorkspaceStore } from "@/lib/agentsky/store";
 
 interface DesktopGreetingProps {
   userName: string | null | undefined;
@@ -18,9 +20,21 @@ const entryTaglineKeys = ["greeting1"];
  * stays fixed. Renders above the centered composer on desktop and centered
  * in the middle of the screen on mobile (positioned by ChatComposerSection).
  */
-export const DesktopGreeting = (_: DesktopGreetingProps) => {
+export const DesktopGreeting = ({ userName }: DesktopGreetingProps) => {
   const lang = useUserLang();
   const [taglineIdx, setTaglineIdx] = useState(0);
+  const [presence, setPresence] = useState<OrbState>("hello");
+  const location = useLocation();
+  const { agents, tier } = useWorkspaceStore();
+  const agentId = new URLSearchParams(location.search).get("agent");
+  const agent = (tier === "pro" ? agents.find((item) => item.id === agentId) : undefined) ?? agents.find((item) => item.isDefault);
+
+  useEffect(() => {
+    setPresence("hello");
+    const hello = window.setTimeout(() => setPresence("idle"), 2600);
+    const sleep = window.setTimeout(() => setPresence("sleeping"), 15000);
+    return () => { window.clearTimeout(hello); window.clearTimeout(sleep); };
+  }, [agent?.id]);
 
   useEffect(() => {
     const key = "megsy:desktop-greeting-index";
@@ -48,10 +62,13 @@ export const DesktopGreeting = (_: DesktopGreetingProps) => {
             initial={{ opacity: 0, scale: 0.86 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-3 md:mb-4"
+            className="mb-5 md:mb-6 p-4"
+            onPointerEnter={() => setPresence("hello")}
+            onPointerLeave={() => setPresence("idle")}
           >
-            <MegsyStarGradient className="h-9 w-9 md:h-10 md:w-10" />
+            <AgentOrb size={88} state={presence} color={agent?.color ?? "ocean"} />
           </motion.div>
+          <p className="mb-2 text-sm text-muted-foreground">{lang === "ar-eg" ? `أهلاً${userName ? ` يا ${userName.split(" ")[0]}` : ""}، أنا ${agent?.name ?? "Megsy"}` : `Hello${userName ? `, ${userName.split(" ")[0]}` : ""}. I'm ${agent?.name ?? "Megsy"}`}</p>
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

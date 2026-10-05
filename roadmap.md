@@ -150,3 +150,9 @@
 - [ ] Show the selected agent identity, awakening, live stacked steps and real helpers in the original chat.
 - [ ] Replace alternate agent sidebar with the original site navigation and polish Agents/Tasks.
 - [ ] Verify stream lifecycle tests and visual states; authenticated live check depends on external sign-in.
+
+## GrokBot follow-up (October 5)
+- [ ] Match sleep/thinking motion and replace greeting star with the selected agent's hello.
+- [ ] Wake only on the first chat turn; start subsequent turns thinking.
+- [ ] List available provider agents safely and enforce subscriber-only switching.
+- [ ] Review the real signed-in chat using the supplied test account.
