@@ -59,7 +59,7 @@ Consequences:
 ## 4. Front-end rules
 
 - Agent pages reuse AppSidebar, and AgentSky turns render inside the original ChatPage; per-message agent identity and steps persist in metadata. Why: one navigation and transcript prevents detached agent workspaces.
-- AgentSky turn subscriptions stop on fresh session.status_idle/session.error events, not transport closure; baseline event IDs prevent historical replay ending new turns. Why: the provider's standing SSE socket may stay open after completion.
+- AgentSky turn subscriptions stop on fresh session.status_idle/session.error events, with persisted-event reconciliation and baseline IDs. Why: the standing SSE feed may omit terminal frames or remain open after completion.
 - Provider catalogue uses only explicitly named `Chat · ` templates, cloned into user-owned agents before use; subscription checks cover new sessions and follow-up messages. Why: shared templates must not expose other users' agents or bypass paid switching.
 - Greeting and transcript share AgentOrb states; prior persisted turns suppress repeat awakening. Why: the same character must represent the active conversation throughout.
 

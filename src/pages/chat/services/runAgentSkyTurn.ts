@@ -108,18 +108,42 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
     const interrupt = () => { void agentApi.interrupt(activeSid).catch(() => undefined); };
     if (controller.signal.aborted) { stopped = true; interrupt(); return; }
     controller.signal.addEventListener("abort", interrupt, { once: true });
+    const feedController = new AbortController();
+    const abortFeed = () => feedController.abort();
+    controller.signal.addEventListener("abort", abortFeed, { once: true });
+    let terminalSeen = false;
+    let checking = false;
+    const accept = (event: RawEvent) => {
+      if (baseline.has(event.id) || received.has(event.id)) return false;
+      received.add(event.id);
+      if (event.type === "session.status_idle" && !started) return false;
+      if (event.type === "session.status_running" || event.type.startsWith("agent.")) started = true;
+      events.push(event);
+      const terminal = event.type === "session.status_idle" || event.type === "session.error";
+      terminalSeen ||= terminal;
+      apply(!terminal);
+      return terminal;
+    };
+    // The standing feed can omit status frames; reconcile against persisted events.
+    const reconcile = setInterval(async () => {
+      if (checking || terminalSeen || controller.signal.aborted) return;
+      checking = true;
+      try {
+        const history = await agentApi.events(activeSid);
+        if (controller.signal.aborted || terminalSeen) return;
+        for (const event of history.events) {
+          if (accept(event)) { feedController.abort(); break; }
+        }
+      } catch { /* Keep the live feed; the next check can recover. */ }
+      finally { checking = false; }
+    }, 2500);
     try {
-      await openStream(activeSid, (event) => {
-        if (baseline.has(event.id) || received.has(event.id)) return false;
-        received.add(event.id);
-        if (event.type === "session.status_idle" && !started) return false;
-        if (event.type === "session.status_running" || event.type.startsWith("agent.")) started = true;
-        events.push(event);
-        const terminal = event.type === "session.status_idle" || event.type === "session.error";
-        apply(!terminal);
-        return terminal;
-      }, controller.signal);
+      await openStream(activeSid, accept, feedController.signal);
+    } catch (error) {
+      if (!terminalSeen) throw error;
     } finally {
+      clearInterval(reconcile);
+      controller.signal.removeEventListener("abort", abortFeed);
       controller.signal.removeEventListener("abort", interrupt);
     }
     if (controller.signal.aborted) { stopped = true; return; }
