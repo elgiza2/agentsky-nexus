@@ -143,3 +143,4 @@
 - [ ] Clean image/video cards + generation UI; approval cards; question cards
 - [ ] Agent creation as full page instead of modal
 - [ ] Project-wide cleanup
+- [ ] Polish the full-page Agents and Tasks screens to match Megsy's original visual language
