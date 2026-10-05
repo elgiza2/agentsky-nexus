@@ -1,6 +1,6 @@
 # Megsy — Agent Handbook
 
-Read before editing; these rules preserve existing behavior.
+Read before editing.
 
 ## 1. What this project is
 
