@@ -146,13 +146,13 @@
 - [ ] Polish the full-page Agents and Tasks screens to match Megsy's original visual language
 
 ## Approved chat unification (October 5)
-- [ ] End AgentSky requests on terminal events, preserve Stop and queued sends.
-- [ ] Show the selected agent identity, awakening, live stacked steps and real helpers in the original chat.
-- [ ] Replace alternate agent sidebar with the original site navigation and polish Agents/Tasks.
-- [ ] Verify stream lifecycle tests and visual states; authenticated live check depends on external sign-in.
+- [x] End AgentSky requests on terminal events, preserve Stop and queued sends.
+- [x] Show the selected agent identity, awakening, live stacked steps and real helpers in the original chat.
+- [x] Replace alternate agent sidebar with the original site navigation and polish Agents/Tasks.
+- [x] Verify stream lifecycle tests and visual states; authenticated first and follow-up turns finish successfully.
 
 ## GrokBot follow-up (October 5)
-- [ ] Match sleep/thinking motion and replace greeting star with the selected agent's hello.
-- [ ] Wake only on the first chat turn; start subsequent turns thinking.
-- [ ] List available provider agents safely and enforce subscriber-only switching.
-- [ ] Review the real signed-in chat using the supplied test account.
+- [x] Match sleep/thinking motion and replace greeting star with the selected agent's hello.
+- [x] Wake only on the first chat turn; start subsequent turns thinking.
+- [x] List available provider agents safely and enforce subscriber-only switching.
+- [x] Review the real signed-in chat using the supplied test account.
