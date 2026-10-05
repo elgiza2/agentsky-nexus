@@ -472,21 +472,19 @@ const AnimatedInput = ({
             <div className="flex-1" />
 
             <AnimatePresence mode="popLayout" initial={false}>
-              {/* While any live task runs the send button becomes a stop
-                  button until the task finishes. */}
+              {/* Keep Stop available during a run, and also keep Send visible
+                  when the user has typed a message so it can be queued. */}
               {isLoading ? (
-
-                <Button
-                  key="stop"
-                  type="button"
-                  onClick={onCancel}
-                  variant="destructive"
-                  size="icon-sm"
-                  className="shrink-0 rounded-full shadow-none"
-                  aria-label={uiT("stopGeneration")}
-                >
-                  <Square className="w-3 h-3" fill="currentColor" />
-                </Button>
+                <motion.div key="running-actions" className="flex items-center gap-1.5" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <Button type="button" onClick={onCancel} variant="destructive" size="icon-sm" className="shrink-0 rounded-full shadow-none" aria-label={uiT("stopGeneration")}>
+                    <Square className="w-3 h-3" fill="currentColor" />
+                  </Button>
+                  {hasText && (
+                    <Button type="button" onClick={handleSendWithSlash} disabled={disabled} data-testid="mobile-composer-send" variant="neutral" size="icon-sm" className="shrink-0 rounded-full h-10 w-10 shadow-none disabled:opacity-40" aria-label={isArabicUi ? "ضيف للانتظار" : "Queue message"}>
+                      <ArrowUp className="w-[18px] h-[18px] md:w-4 md:h-4" strokeWidth={2.2} />
+                    </Button>
+                  )}
+                </motion.div>
               ) : (
                 <motion.div
                   key="send"

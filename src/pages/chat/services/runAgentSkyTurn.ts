@@ -10,6 +10,7 @@ type Args = {
   userMsg: Message;
   localTurnId: string;
   sessionId?: string;
+  agentId?: string;
   lang: Lang;
   images?: string[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -58,7 +59,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
   try {
     const conversationPromise = args.createOrUpdateConversation(args.text || "New chat");
     if (!sid) {
-      const created = await agentApi.createSession({ text: args.text, images: args.images });
+      const created = await agentApi.createSession({ agentId: args.agentId, text: args.text, images: args.images });
       sid = created.session.id;
     } else {
       await agentApi.send(sid, args.text, args.images);
@@ -93,6 +94,10 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
     apply();
     const requests = await agentApi.requests(activeSid).catch(() => ({ requests: [], sessions: [] }));
     args.onRequests(requests.requests);
+    args.setMessages((prev) => prev.map((message) => message.clientId === assistantClientId ? {
+      ...message,
+      agentSkyRequests: requests.requests,
+    } : message));
     const conversationId = await conversationPromise;
     if (conversationId) {
       const userId = await args.saveMessage(conversationId, "user", args.userMsg.content);
@@ -101,6 +106,7 @@ export async function runAgentSkyTurn(args: Args): Promise<void> {
         kind: "agentSky",
         agentSkySessionId: activeSid,
         agentSkyCards: turn?.cards ?? [],
+        agentSkyRequests: requests.requests,
         reasoning: turn?.steps.filter((step) => step.kind === "thought").map((step) => step.detail || step.label).join("\n") || undefined,
         toolParts: toToolParts(turn),
         modelLabel: "OpenClaw · gpt-5.6-luna",
