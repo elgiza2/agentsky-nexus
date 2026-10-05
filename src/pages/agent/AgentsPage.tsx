@@ -25,29 +25,33 @@ export function AgentsPage() {
   return (
     <AgentShell lang={lang} title={ar ? "الوكلاء" : "Agents"} actions={<Button variant="neutral" size="sm" onClick={() => nav("/agents/new")}><Plus />{ar ? "وكيل جديد" : "New agent"}</Button>}>
       <SEOHead path="/agents" title="Agents — Megsy AI" description="Your Megsy agents and their conversations." />
-      <div className="flex-1 overflow-y-auto px-5 py-8 md:px-10 md:py-12">
-        <div className="mx-auto w-full max-w-5xl">
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
-            <div><h1 className="text-3xl font-semibold">{ar ? "وكلاؤك" : "Your agents"}</h1><p className="mt-2 text-sm text-muted-foreground">{agents.length} {ar ? "وكيل" : "agents"} · {sessions.filter((s) => s.status === "running").length} {ar ? "شغال دلوقتي" : "working now"}</p></div>
-            <label className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 sm:w-60"><Search className="h-4 w-4 text-muted-foreground" /><input aria-label={ar ? "ابحث عن وكيل" : "Search agents"} placeholder={ar ? "ابحث عن وكيل" : "Search agents"} value={query} onChange={(e) => setQuery(e.target.value)} className="min-w-0 w-full bg-transparent text-sm outline-none" /></label>
+      <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div><h1 className="text-2xl font-semibold">{ar ? "الوكلاء" : "Agents"}</h1><p className="mt-1 text-sm text-muted-foreground">{agents.length} {ar ? "وكيل" : "agents"} · {sessions.filter((s) => s.status === "running").length} {ar ? "شغال دلوقتي" : "working now"}</p></div>
+            <label className="flex h-10 w-full items-center gap-2 rounded-full border border-border bg-muted/40 px-4 sm:w-64"><Search className="h-4 w-4 text-muted-foreground" /><input aria-label={ar ? "ابحث عن وكيل" : "Search agents"} placeholder={ar ? "ابحث" : "Search"} value={query} onChange={(e) => setQuery(e.target.value)} className="min-w-0 w-full bg-transparent text-sm outline-none" /></label>
           </div>
-          {(error || deleteError) && <p role="alert" className="mb-5 text-sm text-destructive">{error || deleteError}</p>}
-          {!ready && <div className="flex items-center gap-3 py-12" role="status"><AgentOrb size={40} state="awakening" /><span className="text-sm text-muted-foreground">{ar ? "بنجهز وكلاءك…" : "Loading your agents…"}</span></div>}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {(error || deleteError) && <p role="alert" className="mb-4 text-sm text-destructive">{error || deleteError}</p>}
+          {!ready && <div className="flex items-center gap-3 py-12" role="status"><AgentOrb size={36} state="awakening" /><span className="text-sm text-muted-foreground">{ar ? "بنجهز وكلاءك…" : "Loading your agents…"}</span></div>}
+          <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
             {filtered.map((a) => {
               const active = sessions.filter((s) => s.agentId === a.id && s.status === "running").length;
-              return <article key={a.id} className="group flex min-h-64 flex-col rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/30" data-agent-color={a.color}>
-                <div className="mb-6 flex items-start justify-between gap-3"><AgentOrb size={58} color={a.color} state={active ? "tool" : "idle"} />{a.isDefault || a.isTemplate ? <span className="text-xs text-muted-foreground">{a.isDefault ? (ar ? "الأساسي" : "Default") : (ar ? "من المزود" : "Provider")}</span> : <Button variant="ghost" size="icon-sm" title={ar ? "حذف الوكيل" : "Delete agent"} aria-label={ar ? "حذف الوكيل" : "Delete agent"} disabled={deleting === a.id} onClick={async () => {
+              const locked = !a.isDefault && tier !== "pro";
+              return <li key={a.id} className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-muted/40" data-agent-color={a.color}>
+                <AgentOrb size={44} color={a.color} state={active ? "tool" : "idle"} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2"><h2 className="truncate font-medium">{a.name}</h2>{a.isDefault && <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{ar ? "الأساسي" : "Default"}</span>}{active > 0 && <span className="text-[11px] text-primary">{ar ? `${active} شغالة` : `${active} running`}</span>}</div>
+                  <p className="truncate text-sm text-muted-foreground">{a.description || (ar ? "وكيل عام" : "General agent")}</p>
+                </div>
+                {!a.isDefault && !a.isTemplate && <Button variant="ghost" size="icon-sm" title={ar ? "حذف" : "Delete"} aria-label={ar ? "حذف الوكيل" : "Delete agent"} disabled={deleting === a.id} onClick={async () => {
                   if (!confirm(ar ? "تحذف الوكيل ده؟" : "Delete this agent?")) return;
                   setDeleting(a.id); setDeleteError(null);
                   try { await agentApi.deleteAgent(a.id); workspace.removeAgent(a.id); } catch (e) { setDeleteError(e instanceof Error ? e.message : "Could not delete agent"); } finally { setDeleting(null); }
-                }}><Trash2 /></Button>}</div>
-                <h2 className="break-words text-lg font-semibold">{a.name}</h2>
-                <p className="mt-2 mb-6 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.description || (ar ? "وكيل عام" : "General agent")}</p>
-                <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4"><span className="text-xs text-muted-foreground">{active ? (ar ? `${active} مهمة شغالة` : `${active} active tasks`) : (ar ? "جاهز" : "Ready")}</span><Button variant="ghost" size="sm" onClick={() => nav(!a.isDefault && tier !== "pro" ? "/pricing" : `/chat?agent=${encodeURIComponent(a.id)}`)}>{!a.isDefault && tier !== "pro" ? <><Lock />{ar ? "للمشتركين" : "Subscribers"}</> : <>{ar ? "ابدأ شات" : "Start chat"}<ArrowUpRight className="rtl:-scale-x-100" /></>}</Button></div>
-              </article>;
+                }}><Trash2 /></Button>}
+                <Button variant={locked ? "ghost" : "neutral"} size="sm" onClick={() => nav(locked ? "/pricing" : `/chat?agent=${encodeURIComponent(a.id)}`)}>{locked ? <><Lock />{ar ? "للمشتركين" : "Pro"}</> : <>{ar ? "شات" : "Chat"}<ArrowUpRight className="rtl:-scale-x-100" /></>}</Button>
+              </li>;
             })}
-          </div>
+          </ul>
           {ready && !filtered.length && !error && <div className="py-16 text-center text-muted-foreground">{ar ? "مفيش وكلاء بالاسم ده" : "No matching agents"}</div>}
         </div>
       </div>
