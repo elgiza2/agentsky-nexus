@@ -21,7 +21,7 @@ const TOOLS = [
   {
     name: "generate_video",
     description:
-      "Propose a short video. The user sees a card with the prompt and starts rendering from it. Do not wait for it.",
+      "Generate a short video for subscribers. The user sees a rendering card automatically. Do not poll.",
     inputSchema: {
       type: "object",
       properties: {
@@ -119,11 +119,14 @@ async function runTool(userId: string, origin: string, name: string, args: any, 
       if (s.status === "RUNNING") return { text: "The image is still rendering and will appear to the user on its own.", payload };
       return { text: `Image generation failed: ${s.error || "unknown error"}. Tell the user briefly.`, payload };
     }
-    case "generate_video":
-      return {
-        text: "A video card is now shown to the user with this prompt; they start it. Do not wait or poll.",
-        payload: { type: "megsy.video_proposal", prompt: String(args?.prompt || ""), aspect: args?.aspect_ratio || "16:9", duration: Number(args?.duration) || 5 },
-      };
+    case "generate_video": {
+      const prompt = String(args?.prompt || "").trim().slice(0, 5000);
+      if (!prompt) return { text: "Missing prompt." };
+      const model = pickModel("video", await userTier(userId));
+      const run = await startRun(model, model.build({ prompt, aspect: String(args?.aspect_ratio || "16:9"), duration: Number(args?.duration) || 5 }), `vid-${userId}-${callId}`);
+      return { text: "The video is rendering in the chat card. Do not wait or paste links.",
+        payload: { type: "megsy.media", kind: "video", runId: run.runId, token: runStatusToken(run.runId), status: run.status, urls: [], model: model.label, prompt } };
+    }
     case "ask_user":
       return { text: "The question is shown to the user. End your turn now and wait for the answer." };
     case "create_task":

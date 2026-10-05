@@ -93,6 +93,7 @@ export async function listAgentTemplates() {
 }
 
 export async function resolveUserAgent(userId: string, origin: string, id?: string) {
+  if (id === "higgsfield") return ensureHiggsfieldAgent(userId, origin);
   if (!id?.startsWith("template:")) return id ? getOwnedAgent(userId, id) : ensureDefaultAgent(userId, origin);
   const template = (await listAgentTemplates()).find((a) => `template:${a.id}` === id);
   if (!template) throw new AgentSkyError(404, "not_found", "Agent not found");
@@ -150,6 +151,7 @@ export function readMcpToken(token: string): string | null {
 export const BASE_PROMPT = `You are an autonomous assistant inside the Megsy app. Reply in the user's language.
 
 Tools from the "megsy" MCP server are your ONLY way to make media and talk to the app UI:
+- Media generation is for paid subscribers only. If the tool denies access, explain the subscription requirement and never bypass it with another tool.
 - generate_image: whenever the user wants a picture, illustration, logo, edit or design. Never say you cannot create images. Never use any other image tool.
 - generate_video: whenever the user wants a video or animation. It shows the user a card; the video renders there.
 - ask_user: when you truly need the user to choose between options before continuing. Then stop and wait.
@@ -206,6 +208,27 @@ export async function ensureDefaultAgent(userId: string, origin: string) {
     body: JSON.stringify(
       agentSpec({ userId, origin, displayName: "Megsy", kind: "default", color: "aurora" }),
     ),
+  });
+  return agent;
+}
+
+/** Clone only the actual configured Hypit template; never substitute another harness. */
+export async function ensureHiggsfieldAgent(userId: string, origin: string) {
+  const name = `${ownerPrefix(userId)}_higgsfield`;
+  const mine = await listUserAgents(userId);
+  const existing = mine.find((a) => a.name === name);
+  if (existing) return existing;
+  const { agents } = await api<{ agents: any[] }>("/agents");
+  const template = agents.find((a) => !a.archived && ["Hypit", "Chat · Hypit"].includes(a.name));
+  if (!template) throw new AgentSkyError(503, "hypit_unavailable", "وكيل Hypit مش متاح عند المزود حالياً؛ إنشاء الصور والفيديو متوقف لحد ما يتضاف.");
+  const { agent } = await api<{ agent: AgentRecord }>("/agents", {
+    method: "POST", headers: { "Idempotency-Key": name },
+    body: JSON.stringify({
+      ...agentSpec({ userId, origin, displayName: "higgsfield", kind: "custom", color: "sun",
+        prompt: "You are Higgsfield, the media specialist. Use generate_image or generate_video to fulfill media requests, and update_plan to track the job. Do not use alternate media providers or native generation tools." }),
+      name, agentType: template.agentType, llm: template.llm,
+      metadata: { owner: userId, kind: "media", color: "sun", templateId: template.id },
+    }),
   });
   return agent;
 }

@@ -64,31 +64,20 @@ export interface PlanCardConfig {
 // cloud computer → long-running tasks → agents → research → chat →
 // images/video → docs & build → workspace → support.
 const PRO_FEATURES = [
-  "Cloud Computer — Megsy operates a real browser and desktop for you",
-  "Long-running tasks up to 4 hours, continue while you are offline",
-  "3 background agents working in parallel",
-  "Deep Research with citation-backed reports",
-  "Unlimited chat with every flagship model",
+  "Megsy — OpenClaw with helper agents for multi-step work",
+  "Web search, browsing, coding and Python in one chat",
+  "Choose from the available agent catalogue — subscribers only",
+  "Live task progress and tool activity in your conversation",
   "1,000 Megsy Credits every month",
-  "Images cost 2 credits each",
-  "Videos cost 25 credits each",
-  "Agent tasks cost 1–50 credits, based on the work",
-  "Docs, Slides & Megsy Coder — export, build and deploy",
-  "Team workspace with shared projects and files",
+  "Higgsfield image and video generation — subscribers only",
+  "Images and videos appear directly in chat, with no separate studio",
+  "Media availability depends on the provider's configured agents",
   "Priority support · cancel anytime",
 ];
 
 const MAX_FEATURES = [
-  "Cloud Computer with longer sessions and parallel machines",
-  "Long-running tasks up to 12 hours with automatic recovery",
-  "Unlimited parallel background agents",
-  "Deep Research at Ultra depth — longer, deeper report runs",
-  "Everything in Pro, without daily limits",
-  "Unlimited image generation — no caps, no credits",
-  `Up to 120 premium videos a month (${PLAN_MONTHLY_CREDITS.elite} MC)`,
-  "Priority compute lane — up to 3× faster runs",
-  "Larger uploads, longer context and usage analytics",
-  "24/7 priority support · cancel anytime",
+  ...PRO_FEATURES.filter((feature) => !feature.startsWith("1,000")),
+  `${PLAN_MONTHLY_CREDITS.elite} Megsy Credits every month`,
 ];
 
 /** Yearly = 8 × monthly, i.e. 4 months free. */
@@ -249,7 +238,7 @@ export const SERVICES_GUIDE: { name: string; desc: string }[] = [
   },
   {
     name: "Image Generation",
-    desc: "Generate a high-quality image for 2 credits.",
+    desc: "Higgsfield image generation inside chat is exclusive to subscribers; free accounts cannot generate images.",
   },
   {
     name: "Slides & Presentations",
@@ -265,7 +254,7 @@ export const SERVICES_GUIDE: { name: string; desc: string }[] = [
   },
   {
     name: "Video Generation",
-    desc: "Each video costs 25 credits. Pro members receive 1,000 credits every month.",
+    desc: "Higgsfield short videos render directly in chat for subscribers only. Free accounts cannot generate videos.",
   },
   {
     name: "Megsy OS",
@@ -273,7 +262,7 @@ export const SERVICES_GUIDE: { name: string; desc: string }[] = [
   },
   {
     name: "Megsy Credits (MC)",
-    desc: "Chat is free. Images cost 2, videos cost 25, and agent tasks cost 1–50 credits. Daily credits refresh instead of stacking.",
+    desc: "Chat remains available on the free plan. Agent switching and media generation require an active subscription. Included credit balances refresh with the subscription.",
   },
   {
     name: "Team Workspace",
@@ -282,6 +271,7 @@ export const SERVICES_GUIDE: { name: string; desc: string }[] = [
 ];
 
 export const FAQS: { q: string; a: string }[] = [
+  { q: "Can free accounts generate images or videos?", a: "No. Images and videos are exclusive to subscribers and appear directly inside chat. Free users can chat with Megsy but cannot switch agents." },
   {
     q: "How does the introductory first month work?",
     a: "Your first month costs $7, then Pro renews at $15 a month. Each month includes 1,000 credits. You can cancel anytime.",
@@ -292,7 +282,7 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What are Megsy Credits (MC)?",
-    a: "Chat is free. One image costs 2 credits, one video costs 25, and agent work costs 1–50 depending on the task.",
+    a: "Megsy Credits are your plan allowance. Chat remains available for free; image/video generation and agent switching are subscriber-only. Media availability and usage depend on the configured provider.",
   },
   {
     q: "What happens when I run out of MC?",
