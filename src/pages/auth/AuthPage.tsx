@@ -70,12 +70,12 @@ const AuthPage = () => {
   const [verifiedResetCode, setVerifiedResetCode] = useState("");
   const isMobile = useIsMobile();
   const [step, setStep] = useState<Step>(() =>
-    typeof window !== "undefined" && window.innerWidth < 768 ? "intro1" : "email",
+    "intro1",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mobileError, setMobileError] = useState<string | null>(null);
   const mobileIntroSteps: Step[] = ["intro1", "email", "password"];
-  const isMobileIntroStep = (s: Step) => isMobile && mobileIntroSteps.includes(s);
+  const isMobileIntroStep = (s: Step) => mobileIntroSteps.includes(s);
 
   // Auth errors are shown inline (next to the form) on every viewport — a
   // toast alone disappears before the user can react to it.
@@ -652,6 +652,14 @@ const AuthPage = () => {
     });
   };
 
+  const handleMicrosoftLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "azure",
+      options: { scopes: "email", redirectTo: absoluteAuthRedirect(redirectUrl || pathForZone("/chat", window.location.pathname), window.location.search) },
+    });
+    if (error) setMobileError(translateAuthError(error, "loginFailed"));
+  };
+
   const resetFlow = () => {
     setStep("email");
     setPassword("");
@@ -753,13 +761,15 @@ const AuthPage = () => {
     "flex h-12 w-full items-center justify-center gap-2.5 rounded-[10px] border border-foreground/20 bg-foreground/[0.04] px-4 text-[14px] font-semibold text-foreground transition-[transform,border-color,background-color] duration-200 hover:border-foreground/35 hover:bg-foreground/[0.08] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30";
 
   // ─── Mobile intro — inline expandable email/password flow ──
-  if (isMobile && (step === "intro1" || step === "email" || step === "password")) {
+  if (step === "intro1" || step === "email" || step === "password") {
     const isExpanded = step === "email" || step === "password";
     return (
       <>
         <SEOHead title={authT("seoTitle")} description={authT("seoDesc")} path="/auth" noindex />
         <MobileAuthIntro
           onGoogle={handleGoogleLogin}
+          onMicrosoft={handleMicrosoftLogin}
+          onBack={() => setStep(step === "password" ? "email" : "intro1")}
           onEmail={() => setStep("email")}
           onTelegram={undefined}
           expanded={isExpanded}
@@ -784,7 +794,6 @@ const AuthPage = () => {
   // Rendered by MobileAuthExtras, which now uses the exact same hero-video
   // shell, typography and pill controls as the sign-up screen.
   if (
-    isMobile &&
     (isOtpStep ||
       step === "set-password" ||
       step === "reset-password" ||

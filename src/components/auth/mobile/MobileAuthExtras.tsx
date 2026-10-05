@@ -2,6 +2,7 @@
 import { m as motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useRef } from "react";
+import { AgentOrb } from "@/components/agent/AgentOrb";
 import { t as authT, tf as authTf, useUserLang } from "@/lib/authI18n";
 
 type ExtraScreen =
@@ -48,7 +49,7 @@ const TopBar = ({ onBack }: { onBack: () => void }) => (
       aria-label={authT("back")}
       className="mt-4 w-9 h-9 rounded-full grid place-items-center text-foreground/85 active:scale-95 transition-transform"
       style={{
-        background: "var(--overlay-white-06)",
+        background: "#ffffff",
         border: "1px solid var(--overlay-white-12)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
@@ -126,8 +127,8 @@ export default function MobileAuthExtras(p: Props) {
   };
 
   const fieldStyle = {
-    background: "var(--overlay-white-06)",
-    border: "1px solid var(--overlay-white-14)",
+    background: "#ffffff",
+    border: "1px solid #e9e9eb",
     backdropFilter: "blur(10px)",
     WebkitBackdropFilter: "blur(10px)",
   } as const;
@@ -135,34 +136,10 @@ export default function MobileAuthExtras(p: Props) {
   return (
     <div
       dir="ltr"
-      className="relative h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-[#02040c] text-foreground"
+      className="megsy-auth-screen"
       style={{ fontFamily: FONT_SANS, touchAction: "manipulation" }}
     >
-      {/* Same hero clip as the sign-up screen */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        poster={AUTH_HERO_POSTER}
-        data-auth-hero-video
-        className="pointer-events-none absolute inset-0 block h-full min-h-full w-full min-w-full max-w-none object-cover"
-        style={{ objectPosition: "center 48%", zIndex: 0 }}
-      >
-        <source src={AUTH_HERO_MP4} type="video/mp4" />
-      </video>
-
-      {/* Bottom fade overlay */}
-      <div
-        className="absolute inset-x-0 bottom-0 h-[54%] pointer-events-none"
-        style={{
-          zIndex: 1,
-          background:
-            "linear-gradient(to bottom, rgba(2,4,12,0) 0%, rgba(2,4,12,.35) 40%, rgba(2,4,12,.85) 78%, #02040c 100%)",
-        }}
-      />
-
+      <div className="megsy-auth-brand"><div className="megsy-auth-lockup"><AgentOrb color="aurora" size={86} /><h1>Megsy</h1></div></div>
       <div className="relative" style={{ zIndex: 4 }}>
         <TopBar onBack={p.onBack} />
       </div>
@@ -174,7 +151,7 @@ export default function MobileAuthExtras(p: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="absolute inset-x-0 bottom-0 px-6"
+          className="megsy-auth-actions"
           style={{ zIndex: 4, paddingBottom: "max(2.25rem, env(safe-area-inset-bottom, 0px))" }}
         >
           <div className="w-full max-w-sm mx-auto">
@@ -182,12 +159,12 @@ export default function MobileAuthExtras(p: Props) {
               <h1
                 className="text-foreground"
                 style={{
-                  fontFamily: FONT_SERIF,
+                  fontFamily: FONT_SANS,
                   fontWeight: 300,
                   fontSize: "42px",
                   lineHeight: "1.08",
                   letterSpacing: "0.2px",
-                  textShadow: "0 1px 2px rgba(0,0,0,.4)",
+                  textShadow: "none",
                 }}
               >
                 {meta.title}
@@ -296,7 +273,7 @@ export default function MobileAuthExtras(p: Props) {
                   disabled={p.isSubmitting}
                   className={`w-full h-[52px] rounded-full flex items-center justify-center gap-2 active:scale-[0.985] transition-colors duration-300 disabled:opacity-50 ${
                     hasTypedValue
-                      ? "theme-fixed bg-white text-background border border-white"
+                      ? "megsy-auth-primary"
                       : "bg-transparent text-foreground border border-foreground/30"
                   }`}
                   style={{ fontSize: "15px", fontWeight: 600, letterSpacing: "0.1px" }}
@@ -315,7 +292,7 @@ export default function MobileAuthExtras(p: Props) {
               {isOtp && (
                 <div className="text-center pt-3">
                   {p.countdown > 0 ? (
-                    <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    <p className="text-[12px]" style={{ color: "#777777" }}>
                       {authTf("resendInSecondsTemplate", { n: p.countdown })}
                     </p>
                   ) : (

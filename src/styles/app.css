@@ -31,3 +31,5 @@
    it strips on weak devices. */
 @import "./agent.css";
 @import "./perf-tier.css";
+
+@import "./auth-cue.css";
