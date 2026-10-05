@@ -68,6 +68,7 @@ export const agentApi = {
     req<{
       tasks: { id: string; title: string | null; attention: string; statusLine: string | null; openRequests: number; helpers: number; lastActivityAt: string }[];
     }>("tasks"),
+  taskSessions: (id: string) => req<{ sessions: { id: string }[] }>(`tasks/${encodeURIComponent(id)}`),
   media: (p: { kind: "image" | "video"; prompt: string; aspect?: string; duration?: number; model?: string; idempotencyKey?: string }) =>
     req<{ runId: string; token: string; model: string; status: string }>("media", { method: "POST", body: JSON.stringify(p) }),
 };

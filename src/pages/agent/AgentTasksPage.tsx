@@ -33,7 +33,10 @@ export default function AgentTasksPage() {
   const open = async (task: Task) => {
     setOpening(task.id);
     try {
-      const { data, error: queryError } = await supabase.from("messages").select("conversation_id").eq("metadata->>agentSkySessionId", task.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { sessions: taskSessions } = await agentApi.taskSessions(task.id);
+      const sessionIds = taskSessions.map((session) => session.id).filter(Boolean);
+      if (!sessionIds.length) throw new Error(ar ? "المهمة دي ملهاش محادثة متاحة لسه." : "No conversation is available for this task yet.");
+      const { data, error: queryError } = await supabase.from("messages").select("conversation_id").in("metadata->>agentSkySessionId", sessionIds).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (queryError) throw queryError;
       if (data?.conversation_id) nav(`/chat?conv=${encodeURIComponent(data.conversation_id)}`);
       else setError(ar ? "المحادثة المرتبطة بالمهمة دي لسه متحفظتش." : "This task's conversation has not been saved yet.");

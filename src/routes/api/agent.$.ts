@@ -184,6 +184,11 @@ async function handle(request: Request, splat: string): Promise<Response> {
   if (parts[0] === "tasks" && method === "GET") {
     const agents = await listUserAgents(uid);
     const ids = new Set(agents.map((a) => a.id));
+    if (parts[1]) {
+      const result = await api<{ task: any }>(`/tasks/${encodeURIComponent(parts[1])}`);
+      if (!result.task?.agent_id || !ids.has(result.task.agent_id)) return j({ error: { code: "not_found", message: "Task not found" } }, 404);
+      return j({ sessions: result.task.sessions ?? [] });
+    }
     const r = await api<{ tasks: any[] }>("/tasks").catch(() => ({ tasks: [] }));
     const tasks = r.tasks
       .filter((t) => t.agent_id && ids.has(t.agent_id) && !t.archived)
